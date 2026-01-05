@@ -32,6 +32,10 @@ CORS(app, resources={r"/api/*": {"origins": "*"}}) # For dev uses (not recommend
 api = Api(app)
 jwt = JWTManager(app)
 
+## Imports all the Models so they are loaded 
+from app_backend_Flask.application.models import *
+
+# JWT error handler
 @jwt.unauthorized_loader
 def missing_token_callback(e):
     return {
@@ -41,16 +45,38 @@ def missing_token_callback(e):
 
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_payload):
+    token_type = jwt_payload["type"]
     return {
         "error": "Token Expired",
-        'message': 'The authorization token has expired.'
+        'message': f"The authorization {token_type} token has been expired."
     }, 403
 
-## Imports all the API resources so they are loaded 
-from app_backend_Flask.application.api.login_reg_auth import *
+@jwt.invalid_token_loader
+def invalid_token_callback(e):
+   return {
+        "error": "Invalid Token",
+        'message': f"The authorization token has: {e}."
+   }, 422
 
-## Imports all the Models so they are loaded 
-from app_backend_Flask.application.models import *
+@jwt.token_in_blocklist_loader
+def check_token_validility(jwt_header, jwt_payload):
+    jti = jwt_payload["jti"]
+    token = User_Tokens.query.filter_by(jti=jti).first()
+    if (token == None) or not token.is_valid():
+       return True
+    else:
+       return False
+
+@jwt.revoked_token_loader
+def revoked_token_callback(jwt_header, jwt_payload):
+   token_type = jwt_payload["type"]
+   return{
+      "error": "Token Revoked",
+      "message": f"The authorization {token_type} token has been revoked.",
+   }, 401
+
+## Imports all the API resources so they are loaded 
+from app_backend_Flask.application.api import *
 
 # Import the Vue frontend to serve
 from app_backend_Flask.application.index import *
@@ -61,6 +87,8 @@ api.add_resource(DoctorRegistration, "/api/register/doctor")
 api.add_resource(UserLogin, "/api/login")
 api.add_resource(RefershTokenValidator, "/api/refresh")
 api.add_resource(UserLogout, "/api/logout")
+api.add_resource(UserLogoutEverywhere, "/api/logout/all")
+api.add_resource(Dashboard, "/api/dashboard")
 
 
 if __name__ == '__main__':

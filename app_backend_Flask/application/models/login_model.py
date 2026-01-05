@@ -8,15 +8,15 @@ import bcrypt, uuid
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    email = db.Column(db.String(100), nullable=False, unique=True)
+    email = db.Column(db.String(100), nullable=False, unique=True, index=True)
     password = db.Column(db.String(255), nullable=False)
-    active = db.Column(db.Boolean(), nullable=False, default=True)
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
     fs_uniquifier = db.Column(db.String(50), unique=True, nullable=False)
     roles = db.relationship('Role', secondary='roles_users', backref=db.backref('users', lazy='dynamic'))
     patient = db.relationship('Patient', backref='user', cascade="all, delete-orphan")
     doc_availability = db.relationship('Availability', backref='user', cascade="all, delete-orphan")
     doc_department = db.relationship('Department', backref='user', cascade="all, delete-orphan")
-    user_token = db.relationship('Refresh_Tokens', backref='user', cascade="all, delete-orphan")
+    user_token = db.relationship('User_Tokens', backref='user', cascade="all, delete-orphan")
 
     @classmethod
     def create_admin(cls):
@@ -36,7 +36,7 @@ class User(db.Model):
             new_registration = User(
                 email = email,
                 password = hashed_passwd.decode("utf-8"),
-                active = True,
+                is_active = True,
                 fs_uniquifier = str(uuid.uuid4())
             )
             db.session.add(new_registration)
@@ -134,7 +134,7 @@ class Roles_Users(db.Model):
 class Patient(db.Model):
     __tablename__ = 'patient'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, unique=True)  
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)  
     full_name = db.Column(db.String(100), nullable=False)
     dob = db.Column(db.DateTime, nullable=False)
     gender = db.Column(db.String(20), nullable=False)
@@ -145,7 +145,7 @@ class Patient(db.Model):
 class Doctor(db.Model):
     __tablename__ = 'doctor'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, unique=True)  
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, unique=True, index=True)  
     full_name = db.Column(db.String(100), nullable=False)
     specialization = db.Column(db.String(80), nullable=False)
     experience = db.Column(db.Integer, nullable=False)
@@ -153,15 +153,16 @@ class Doctor(db.Model):
     contact = db.Column(db.Integer, nullable=False)
     is_deleted = db.Column(db.Boolean, nullable=False, default=False)
     
-class Refresh_Tokens(db.Model):
-    __tablename__ = "refresh_tokens"
+class User_Tokens(db.Model):
+    __tablename__ = "user_tokens"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
-    jti = db.Column(db.String(255), nullable=False, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
+    jti = db.Column(db.String(255), nullable=False, unique=True, index=True)
+    type = db.Column(db.String(20), nullable=False)
     create_datetime = db.Column(db.DateTime, default=datetime.now(), nullable=False)
     expiry_datetime = db.Column(db.DateTime, nullable=False)
     valid = db.Column(db.Boolean, default=True, nullable=False)
 
-    def is_active(self):
-        """Return True if the token is valid and not expired."""
+    def is_valid(self):
+        """Return True if the token is valid and not expired else False"""
         return (self.valid and datetime.now() < self.expiry_datetime)

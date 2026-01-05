@@ -68,7 +68,7 @@ class PatientRegistration(Resource):
             new_registration = User(
                 email = args["email"],
                 password = hashed_passwd.decode("utf-8"),
-                active = True,
+                is_active = True,
                 fs_uniquifier = str(uuid.uuid4())
             )
             db.session.add(new_registration)
@@ -123,7 +123,7 @@ class DoctorRegistration(Resource):
             new_registration = User(
                 email = args["email"],
                 password = hashed_passwd.decode("utf-8"),
-                active = True,
+                is_active = True,
                 fs_uniquifier = str(uuid.uuid4())
             )
             db.session.add(new_registration)
@@ -159,8 +159,13 @@ class UserLogin(Resource):
         args = loginData_validator.parse_args()
         user = User.query.filter_by(email=args["email"]).first()
         
-        if not user or not bcrypt.checkpw(args["password"].encode("utf-8"), user.password.encode("utf-8")):
-            abort(401, message="Invalid credentials")
+        if user != None: 
+            if not user.is_active:
+                abort(401, message="User has been blacklisted")
+            if not bcrypt.checkpw(args["password"].encode("utf-8"), user.password.encode("utf-8")):
+                abort(401, message="Invalid credential")
+        else:
+            abort(404, message="User do not exist")
 
         if args["rememberMe"] == True:
             expiry_period = timedelta(days=30)
@@ -168,21 +173,28 @@ class UserLogin(Resource):
             expiry_period = timedelta(days=7)
         
         try:
-            prevToken_exist = Refresh_Tokens.query.filter_by(user_id=user.id).first()
-            if prevToken_exist:
-                # Delete the previuos refresh token
-                db.session.delete(prevToken_exist)
-       
-            jwt_access_token = create_access_token(identity=str(user.id), additional_claims={"role": Roles_Users.user_role(user.id)})
             jwt_refresh_token = create_refresh_token(identity=str(user.id), expires_delta=expiry_period)
-            jti_sig = get_jti(jwt_refresh_token)
-            new_refresh_token = Refresh_Tokens(
+            refresh_jti_sig = get_jti(jwt_refresh_token)
+            jwt_access_token = create_access_token(identity=str(user.id), additional_claims={"role": Roles_Users.user_role(user.id), "refresh_jti": refresh_jti_sig})
+            access_jti_sig = get_jti(jwt_access_token)
+            
+            new_refresh_token = User_Tokens(
                 user_id = user.id,
-                jti = jti_sig,
+                jti = refresh_jti_sig,
+                type = "refresh",
                 create_datetime = datetime.now(),
                 expiry_datetime = datetime.now() + expiry_period
             )
+            new_access_token = User_Tokens(
+                user_id = user.id,
+                jti = access_jti_sig,
+                type = "access",
+                create_datetime = datetime.now(),
+                expiry_datetime = datetime.now() + timedelta(minutes=10)
+            )
+
             db.session.add(new_refresh_token)
+            db.session.add(new_access_token)
             db.session.flush()
 
         except Exception as e:
@@ -204,32 +216,33 @@ class RefershTokenValidator(Resource):
     def post(self):
         refreshToken_payload = get_jwt()
         rfreshToken_jti = refreshToken_payload["jti"]
-        user_id = get_jwt_identity()
+        userId = get_jwt_identity()
 
-        refreshToken_exist = Refresh_Tokens.query.filter_by(jti=rfreshToken_jti, user_id=int(user_id)).first()
+        refreshToken_exist = User_Tokens.query.filter_by(jti=rfreshToken_jti).first()
         
-        if not refreshToken_exist or not refreshToken_exist.is_active():
+        if not refreshToken_exist or not refreshToken_exist.is_valid():
             return {"msg": "Invalid or expired refresh token"}, 401
-        prev_token_expiry = refreshToken_exist.expiry_datetime
-        expiry_period = (prev_token_expiry - datetime.now())
-        try:
-            # Delete the previuos refresh access token
-            db.session.delete(refreshToken_exist)
-            db.session.flush()
         
-            # Generate new access and refresh token
-            jwt_access_token = create_access_token(identity=user_id, additional_claims={"role": Roles_Users.user_role(int(user_id))})
+        try:
+            ## Delete the previuos access token
+            # prevAccess_token = User_Tokens.query.filter_by(user_id=int(userId)).first()
+            # if prevAccess_token != None:
+            #     db.session.delete(prevAccess_token)
+            #     db.session.flush()
+        
+            # Generate new access token
+            jwt_access_token = create_access_token(identity=str(userId), additional_claims={"role": Roles_Users.user_role(int(userId)), "refresh_jti": rfreshToken_jti})
+        
+            jti_sig = get_jti(jwt_access_token)
            
-            jwt_refresh_token = create_refresh_token(identity=user_id, expires_delta=expiry_period)
-            jti_sig = get_jti(jwt_refresh_token)
-           
-            new_refresh_token = Refresh_Tokens(
-                user_id = int(user_id),
+            new_access_token = User_Tokens(
+                user_id = int(userId),
                 jti = jti_sig,
+                type = "access",
                 create_datetime = datetime.now(),
-                expiry_datetime = prev_token_expiry
+                expiry_datetime = datetime.now() + timedelta(minutes=10)
             )
-            db.session.add(new_refresh_token)
+            db.session.add(new_access_token)
             db.session.flush()
         except Exception as e:
             db.session.rollback()
@@ -238,8 +251,7 @@ class RefershTokenValidator(Resource):
         else:
             db.session.commit()
             return {
-                "access_token": jwt_access_token,
-                "refresh_token": jwt_refresh_token
+                "access_token": jwt_access_token
             }, 200
         
 # Logout API
@@ -247,16 +259,20 @@ class UserLogout(Resource):
     '''This resource consist of only 'POST' method which checks 'access token' sent by the client and revoke the active refresh token  '''
     @jwt_required()   
     def post(self):
-        user_id = get_jwt_identity()
+        accessToken_payload = get_jwt()
+        accessToken_jti = accessToken_payload["jti"]
+        rfreshToken_jti = accessToken_payload["refresh_jti"]
 
-        refreshToken_exist = Refresh_Tokens.query.filter_by(user_id=int(user_id)).first()
-        
-        if not refreshToken_exist or not refreshToken_exist.is_active():
-            abort(409, message="Client not logged in.")
+        refreshToken_exist = User_Tokens.query.filter_by(jti=rfreshToken_jti).first()
+        accessToken_exist = User_Tokens.query.filter_by(jti=accessToken_jti).first()
+
+        if not accessToken_exist or not refreshToken_exist or not refreshToken_exist.is_valid():
+            abort(401, message="Logout failed: User not logged in.")
        
         try:
-            # Delete the previuos refresh token
-            db.session.delete(refreshToken_exist)
+            accessToken_exist.valid = False
+            refreshToken_exist.valid = False
+            db.session.flush()
         except Exception as e:
             db.session.rollback()
             app.logger.exception(f"(Resource) UserLogout: (triggered) refresh token delete commit rollback: (cause) {e}")
@@ -264,3 +280,32 @@ class UserLogout(Resource):
         else:
             db.session.commit()
             return {"msg": "Logged out successfully"}, 200
+        
+# Logout Everywhere API
+class UserLogoutEverywhere(Resource):
+    '''This resource consist of only 'POST' method which checks 'access token' sent by the client and revoke all the active refresh and access token'''
+    @jwt_required()   
+    def post(self):
+        accessToken_payload = get_jwt()
+        accessToken_jti = accessToken_payload["jti"]
+        rfreshToken_jti = accessToken_payload["refresh_jti"]
+        user_id = get_jwt_identity()
+
+        refreshToken_exist = User_Tokens.query.filter_by(jti=rfreshToken_jti).first()
+        accessToken_exist = User_Tokens.query.filter_by(jti=accessToken_jti).first()
+
+        if not user_id or not accessToken_exist or not refreshToken_exist or not refreshToken_exist.is_valid():
+            abort(401, message="Logout failed: User not logged in.")
+       
+        try:
+            tokens = User_Tokens.query.filter_by(user_id=int(user_id)).all()
+            for t in tokens:
+                t.valid = False
+                db.session.flush()
+        except Exception as e:
+            db.session.rollback()
+            app.logger.exception(f"(Resource) UserLogout: (triggered) refresh token delete commit rollback: (cause) {e}")
+            abort(500, message="Logout failed")
+        else:
+            db.session.commit()
+            return {"msg": "Logged out everywhere successfully"}, 200
