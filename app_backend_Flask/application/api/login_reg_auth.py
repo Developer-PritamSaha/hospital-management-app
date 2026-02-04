@@ -3,35 +3,40 @@ from flask import current_app as app
 from flask_restful import Resource, reqparse
 from flask_restful import abort
 from flask_jwt_extended import create_access_token, create_refresh_token
-from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_jwt_extended import get_jwt, get_jti
 from datetime import datetime, timedelta
 import uuid, bcrypt
 
 from ..extensions import db
-from app_backend_Flask.application.models.login_model import *
+from app_backend_Flask.application.models import *
 from ..utils.input_validators import *
+from ..utils.generate_credentials_uid import *
 
 ## Request Parser setup 
 # For Patient Data
 patientData_validator = reqparse.RequestParser()
-patientData_validator.add_argument("full_name", type=non_empty_string, required=True, help="{error_msg}")
+patientData_validator.add_argument("full_name", type=check_full_name, required=True, help="{error_msg}")
 patientData_validator.add_argument("email", type=email_validator, required=True, help="{error_msg}")
 patientData_validator.add_argument("password", type=validate_passwd, required=True, help="{error_msg}")
 patientData_validator.add_argument("dob", type=is_valid_date, required=True, help="{error_msg}")
 patientData_validator.add_argument("gender", type=check_gender, required=True, help="{error_msg}")
-patientData_validator.add_argument("height_cm", type=int, required=True, help="Missing required parameter in the JSON body or not an integer or empty.")
-patientData_validator.add_argument("weight_kg", type=int, required=True, help="Missing required parameter in the JSON body or not an integer or empty.")
+patientData_validator.add_argument("height_cm", type=is_integer, required=True, help="{error_msg}")
+patientData_validator.add_argument("weight_kg", type=is_integer, required=True, help="{error_msg}")
+patientData_validator.add_argument("contact", type=is_valid_contact, required=True, help="{error_msg}")
 
 #For Doctor Data
 doctorData_validator = reqparse.RequestParser()
-doctorData_validator.add_argument("full_name", type=non_empty_string, required=True, help="{error_msg}")
+doctorData_validator.add_argument("full_name", type=check_full_name, required=True, help="{error_msg}")
 doctorData_validator.add_argument("email", type=email_validator, required=True, help="{error_msg}")
 doctorData_validator.add_argument("password", type=validate_passwd, required=True, help="{error_msg}")
-doctorData_validator.add_argument("specialization", type=non_empty_string, required=True, help="{error_msg}")
-doctorData_validator.add_argument("experience", type=int, required=True, help="Missing required parameter in the JSON body or not an integer or empty.")
+doctorData_validator.add_argument("gender", type=check_gender, required=True, help="{error_msg}")
+doctorData_validator.add_argument("license", type=non_empty_string, required=True, help="{error_msg}")
+doctorData_validator.add_argument("specialization_id", type=is_integer, required=True, help="{error_msg}")
+doctorData_validator.add_argument("experience", type=is_integer, required=True, help="{error_msg}")
+doctorData_validator.add_argument("department_id", type=is_integer, required=True, help="{error_msg}")
 doctorData_validator.add_argument("description", type=non_empty_string, required=True, help="{error_msg}")
-doctorData_validator.add_argument("contact", type=int, required=True, help="Missing required parameter in the JSON body or not an integer or empty.")
+doctorData_validator.add_argument("contact", type=is_valid_contact, required=True, help="{error_msg}")
 
 # For login data
 loginData_validator = reqparse.RequestParser()
@@ -45,22 +50,33 @@ class PatientRegistration(Resource):
     '''This resource consist of only 'POST' method which checks rgistration credentials and data sent by the patient's client and register them into the application '''
     def post(self):    
         if not request.is_json:
-            return {"error": "Only JSON data allowed"}, 400
+            abort(400, message="Only JSON data allowed")
         args = patientData_validator.parse_args()
 
         user_exist = User.query.filter_by(email=args["email"]).first()
         if user_exist:
-            abort(409, message="Patient already exist")
+            abort(409, message="Patient email already exist")
         
         ## Check Age and Height and Weight
         dob = args["dob"]
         current_date = datetime.now().date()
         if dob > current_date:
-            abort(400, message=" 'dob' can not be in the future.")
+            abort(400, message={
+                'dob': "DOB can not be in the future."
+            })
+        if current_date.year - dob.year > 100:
+            abort(400, message={
+                'dob': "Age can not be greater than 100."
+            })
+        
         if args["height_cm"] < 55 or args["height_cm"] > 272: # in c.m.
-            abort(400, message=" 'height' should be within(55 to 272)cm.")
+            abort(400, message={
+                'height_cm': "Height should be within (55 to 272) cm."
+            })
         if args["weight_kg"] <= 0 or args["weight_kg"] > 350: # in k.g.
-            abort(400, message=" 'weight' should be within(1 to 350)kg.")
+            abort(400, message={
+                'weight_kg': "Weight should be within (1 to 350) kg."
+            })
 
         try:
             hashed_passwd = bcrypt.hashpw(args["password"].encode("utf-8"), bcrypt.gensalt())
@@ -76,7 +92,9 @@ class PatientRegistration(Resource):
 
             new_patient_data = Patient(
                 user_id = new_registration.id,
-                full_name = args["full_name"],
+                public_id = generate_uuid("PA",6),
+                full_name = args["full_name"].title(),
+                contact = args["contact"],
                 dob = dob,
                 gender = args["gender"],
                 height_cm = args["height_cm"],
@@ -89,33 +107,45 @@ class PatientRegistration(Resource):
 
         except Exception as e:
             db.session.rollback()
-            app.logger.exception(f"(Resource) UserRegistration: (triggered) new registration commit rollback: (cause) {e}")
-            abort(500, message="Registration failed")
+            app.logger.exception(f"(Resource) PatientRegistration: (triggered) new registration commit rollback: (cause) {e}")
+            abort(500, message="Patient Registration failed")
         else:
             db.session.commit()
-            return {'msg': "Patient Registration Successful"}, 201
+            return {'message': "Patient Registration Successful"}, 201
         
 class DoctorRegistration(Resource):
     '''This resource consist of only 'POST' method which checks rgistration credentials and doctor's data sent by the admin and register them into the application '''
     @jwt_required()
     def post(self):    
         if not request.is_json:
-            return {"error": "Only JSON data allowed"}, 400
+            abort(400, message="Only JSON data allowed")
         
-        access_key = get_jwt()
+        user_id = get_jwt_identity()
         
-        if access_key["role"] != "admin":
+        if Roles_Users.user_role(int(user_id)) != "admin":
             abort(403, message="Admin access needed")
        
         args = doctorData_validator.parse_args()
 
         user_exist = User.query.filter_by(email=args["email"]).first()
         if user_exist:
-            abort(409, message="Doctor already exist")
-        if args['experience'] < 0 or args['experience'] > 80:
-            abort(400, message=" 'experience' should be within(0 to 80)")
-        if len(str(args['contact'])) != 10:
-            abort(400, message="Contact must contain 10 digits")
+            abort(409, message="Doctor email already exist")
+        if args['experience'] < 1 or args['experience'] > 80:
+            abort(400, message={
+                'experience': "Experience should be within(1 to 80)"
+            })
+        if not Department.query.filter_by(id=args["department_id"]).first():
+            abort(404, message={
+                'department_id': "Department id donot exist"
+            })
+        if not Specialization.query.filter_by(id=args["specialization_id"]).first():
+            abort(404, message={
+                'specialization_id': "Specialization id donot exist"
+            })
+        if Doctor.query.filter_by(license=args["license"]).first():
+            abort(400, message={
+                'license': "License provided already exist"
+            })
         
         try:
             hashed_passwd = bcrypt.hashpw(args["password"].encode("utf-8"), bcrypt.gensalt())
@@ -129,10 +159,14 @@ class DoctorRegistration(Resource):
             db.session.add(new_registration)
             db.session.flush()
 
+            doc_public_id = generate_uuid("DR",6)
             new_doctor_data = Doctor(
                 user_id = new_registration.id,
-                full_name = args["full_name"],
-                specialization = args["specialization"],
+                public_id = doc_public_id,
+                specialization_id = args["specialization_id"],
+                full_name = args["full_name"].title(),
+                gender = args["gender"],
+                license = args["license"],
                 experience = args["experience"],
                 description = args["description"],
                 contact = args["contact"]
@@ -141,21 +175,28 @@ class DoctorRegistration(Resource):
             db.session.flush()
 
             db.session.add(Roles_Users(user_id=new_registration.id,role_id=2))
+            db.session.flush()
 
+            db.session.add(Departments_Doctors(doctor_id=new_doctor_data.id, department_id=args["department_id"]))
+            db.session.flush()
+
+            save_credentials(args["email"],args["password"],f'./doctor_credentials/{doc_public_id}_cred.txt',f"[ {args["full_name"].title().replace(" ","_")} ({doc_public_id}) ] doctor's")
+            
         except Exception as e:
             db.session.rollback()
-            app.logger.exception(f"(Resource) UserRegistration: (triggered) new registration commit rollback: (cause) {e}")
-            abort(500, message="Registration failed")
+            app.logger.exception(f"(Resource) DoctorRegistration: (triggered) new registration commit rollback: (cause) {e}")
+            abort(500, message="Doctor Registration failed")
         else:
             db.session.commit()
-            return {'msg': "Doctor Registration Successful"}, 201
+            return {'message': "Doctor Registration Successful"}, 201
         
 ## Login API
 class UserLogin(Resource):
     '''This resource consist of only 'POST' method which checks login credentials sent by the client and returns the 'access token' and 'refresh token' '''
     def post(self):
         if not request.is_json:
-                return {"error": "Only JSON data allowed"}, 400
+            abort(400, message="Only JSON data allowed")
+        
         args = loginData_validator.parse_args()
         user = User.query.filter_by(email=args["email"]).first()
         
@@ -204,13 +245,12 @@ class UserLogin(Resource):
         else:
             db.session.commit()
             return {
-                "msg": "Login Successful",
                 "access_token": jwt_access_token,
                 "refresh_token": jwt_refresh_token
             }, 200
 
-# Refresh Token validation API
-class RefershTokenValidator(Resource):
+# Access Token refresh API
+class TokenRefresher(Resource):
     '''This resource consist of only 'POST' method which checks 'refresh token' sent by the client and returns the 'access token' '''
     @jwt_required(refresh=True)   
     def post(self):
@@ -218,18 +258,16 @@ class RefershTokenValidator(Resource):
         rfreshToken_jti = refreshToken_payload["jti"]
         userId = get_jwt_identity()
 
+        user = User.query.filter_by(id=int(userId)).first()
+        if not user.is_active:
+            abort(401, message="User has been blacklisted")
+
         refreshToken_exist = User_Tokens.query.filter_by(jti=rfreshToken_jti).first()
         
         if not refreshToken_exist or not refreshToken_exist.is_valid():
-            return {"msg": "Invalid or expired refresh token"}, 401
+            abort(401, message="Invalid or expired refresh token")
         
         try:
-            ## Delete the previuos access token
-            # prevAccess_token = User_Tokens.query.filter_by(user_id=int(userId)).first()
-            # if prevAccess_token != None:
-            #     db.session.delete(prevAccess_token)
-            #     db.session.flush()
-        
             # Generate new access token
             jwt_access_token = create_access_token(identity=str(userId), additional_claims={"role": Roles_Users.user_role(int(userId)), "refresh_jti": rfreshToken_jti})
         
@@ -246,12 +284,34 @@ class RefershTokenValidator(Resource):
             db.session.flush()
         except Exception as e:
             db.session.rollback()
-            app.logger.exception(f"(Resource) RefreshTokenValidator: (triggered) new token commit rollback: (cause) {e}")
+            app.logger.exception(f"(Resource) TokenRefresher: (triggered) new token commit rollback: (cause) {e}")
             abort(500, message="Access Token generation failed")
         else:
             db.session.commit()
             return {
                 "access_token": jwt_access_token
+            }, 200
+        
+class UserTokenRole(Resource):
+    '''This resource consist of only 'POST' method which checks 'refresh token' for the client is still valid or not and returns the user role'''
+    @jwt_required()   
+    def get(self):
+        accessToken_payload = get_jwt()
+        rfreshToken_jti = accessToken_payload["refresh_jti"]
+        user_id = get_jwt_identity()
+
+        user = User.query.filter_by(id=int(user_id)).first()
+        if not user.is_active:
+            abort(401, message={'status': "revoked"})
+
+        refreshToken_exist = User_Tokens.query.filter_by(jti=rfreshToken_jti).first()
+
+        if not refreshToken_exist or not refreshToken_exist.is_valid():
+            abort(401, message={'status': "invalid"})
+        else:
+            return {
+                "status": "valid",
+                "role": Roles_Users.user_role(int(user_id))
             }, 200
         
 # Logout API
@@ -275,11 +335,11 @@ class UserLogout(Resource):
             db.session.flush()
         except Exception as e:
             db.session.rollback()
-            app.logger.exception(f"(Resource) UserLogout: (triggered) refresh token delete commit rollback: (cause) {e}")
+            app.logger.exception(f"(Resource) UserLogout: (triggered) token invalidation commit rollback: (cause) {e}")
             abort(500, message="Logout failed")
         else:
             db.session.commit()
-            return {"msg": "Logged out successfully"}, 200
+            return {"message": "Logged out successfully"}, 200
         
 # Logout Everywhere API
 class UserLogoutEverywhere(Resource):
@@ -304,8 +364,8 @@ class UserLogoutEverywhere(Resource):
                 db.session.flush()
         except Exception as e:
             db.session.rollback()
-            app.logger.exception(f"(Resource) UserLogout: (triggered) refresh token delete commit rollback: (cause) {e}")
+            app.logger.exception(f"(Resource) UserLogoutEverywhere: (triggered) token invalidation commit rollback: (cause) {e}")
             abort(500, message="Logout failed")
         else:
             db.session.commit()
-            return {"msg": "Logged out everywhere successfully"}, 200
+            return {"message": "Logged out everywhere successfully"}, 200

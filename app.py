@@ -13,11 +13,12 @@ logging.basicConfig(filename='app.log', level=logging.DEBUG, format=f'%(asctime)
 app = None
 
 def create_app():
-    app = Flask(__name__, static_folder="dist_frontend_VUE", static_url_path="")
+    app = Flask(__name__, static_folder="./app_frontend_VUE/dist", static_url_path="")
     if os.getenv('ENV', "development") == "production":
       raise Exception("\n>> Currently no production config is setup.")
     else:
-      print("\n>> Staring Local Development...")
+      print("\n<#> Welcome to Hospital Management System \n")
+      print(">> Staring Local Development...")
       app.config.from_object(LocalDevConfig)
 
     # Initialize extensions
@@ -27,8 +28,8 @@ def create_app():
     return app
 
 app = create_app()
-CORS(app, resources={r"/api/*": {"origins": "*"}}) # For dev uses (not recommended, this will expose your api endpoints to any domains)
-# CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+CORS(app, resources={r"/api/*": {"origins": "*"}}) ## For dev uses (not recommended, this will expose the api endpoints to any domains)
+
 api = Api(app)
 jwt = JWTManager(app)
 
@@ -81,31 +82,55 @@ from app_backend_Flask.application.api import *
 # Import the Vue frontend to serve
 from app_backend_Flask.application.index import *
 
-## Adding APi resorces to their respective routes
-api.add_resource(PatientRegistration, "/api/register")
+### Adding API resorces to their respective routes
+## Login Registration APIs
+api.add_resource(PatientRegistration, "/api/register/patient")
 api.add_resource(DoctorRegistration, "/api/register/doctor")
 api.add_resource(UserLogin, "/api/login")
-api.add_resource(RefershTokenValidator, "/api/refresh")
+api.add_resource(TokenRefresher, "/api/token/refresh")
+api.add_resource(UserTokenRole, "/api/token/user/role-valid")
 api.add_resource(UserLogout, "/api/logout")
 api.add_resource(UserLogoutEverywhere, "/api/logout/all")
-api.add_resource(Dashboard, "/api/dashboard")
+
+## Search APIs
+api.add_resource(AdminSearchPatientsData, "/api/dashboard/admin/patients/search")
+api.add_resource(AdminSearchDoctorsData, "/api/dashboard/admin/doctors/search")
+
+api.add_resource(UserDashboard, "/api/dashboard")
+
+## Admin APIs
+api.add_resource(AdminDashboard, "/api/dashboard/admin")
+api.add_resource(AdminPatientsData, "/api/dashboard/admin/patients")
+api.add_resource(AdminDoctorsData, "/api/dashboard/admin/doctors")
+api.add_resource(StatsCount, "/api/dashboard/admin/stats")
+api.add_resource(DepartmentList, "/api/dashboard/admin/departments")
+api.add_resource(SpecializationList, "/api/dashboard/admin/specializations")
+api.add_resource(AdminManageDoctor, "/api/dashboard/admin/doctor")
+api.add_resource(AdminManagePatient, "/api/dashboard/admin/patient")
 
 
 if __name__ == '__main__':
-  db_init_success = False
-  ## Create the database tables or schema if they do not exist
+  init_success = False
+  ## Create the database tables or schema
   try:
     with app.app_context():
         db.create_all()
-    print(">> Database Initialized successfully..")
+    print(">> Database Initialized successfully...")
 
-    # Initialize default roles and admin user if not already initialized
+    # Initialize default roles and admin user 
     Role.create_default_roles()
     if not Roles_Users.query.filter_by(user_id=1, role_id=1).first():
         print("\n<!> No admin account found. Intializing with new admin credentials.")
         User.create_admin()
 
-    db_init_success = True
+    # Initialize default departments and specializations
+    Department.create_default_departments()
+    Specialization.create_default_specializations()
+
+    # Build frontend distribution
+    build_frontend_dist(rebuild=False) ## rebuild=False
+
+    init_success = True
 
   except Exception as e:
     db.session.rollback()
@@ -113,10 +138,10 @@ if __name__ == '__main__':
     print("*>> App Initialization failed..")
 
 
-  if(db_init_success):
+  if(init_success):
     # Run the Flask app
     port = 5080
-    print(f"\n🚀 Hospital Management App is running at: http://127.0.0.1:{port}/\n   (ctrl + c - to quit)\n")
+    print(f"\n@>> Hospital Management App is running at: http://127.0.0.1:{port}/\n   (ctrl + c - to quit)\n")
     app.run(host='0.0.0.0',port=port)
   else:
     print("\n<!> Exiting the app...")

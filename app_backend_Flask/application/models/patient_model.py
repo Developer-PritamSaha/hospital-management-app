@@ -4,10 +4,10 @@ class Appointment(db.Model):
     __tablename__ = 'appointment'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     patient_id = db.Column(db.Integer, db.ForeignKey("patient.id", ondelete="CASCADE"), nullable=False) 
-    doctor_id = db.Column(db.Integer, db.ForeignKey("doctor.id"), nullable=False) 
+    doctor_id = db.Column(db.Integer, db.ForeignKey("doctor.id", ondelete="CASCADE"), nullable=False) 
     date = db.Column(db.DateTime, nullable=False)
     time = db.Column(db.DateTime, nullable=False)
-    status = db.Column(db.String(20), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='booked') ## Other Values : 'canceled' or 'completed'
     patient_treatment = db.relationship('Treatment', backref='appointment', cascade="all, delete-orphan")
     
 class Treatment(db.Model):

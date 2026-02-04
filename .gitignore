@@ -2,8 +2,10 @@ __pycache__/
 temp/
 test/
 admin_credential.txt
+*_cred.txt
 *.sqlite3
 *.log
 *.venv
 *.vscode
 *.db
+docs/project_guides
