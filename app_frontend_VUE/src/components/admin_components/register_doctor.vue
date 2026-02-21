@@ -15,6 +15,7 @@ email: '',
 password: '',
 gender: '',
 license: '',
+qualification: '',
 specialization_id: '',
 department_id: '',
 experience: '',
@@ -28,6 +29,7 @@ email: false,
 password: false,
 gender: false,
 license: false,
+qualification: false,
 specialization_id: false,
 department_id: false,
 experience: false,
@@ -56,6 +58,7 @@ function resetInvalidFlags(){
         password: false,
         gender: false,
         license: false,
+        qualification: false,
         specialization_id: false,
         department_id: false,
         experience: false,
@@ -73,6 +76,7 @@ return (
     data.value.password === confirm_password.value &&
     data.value.contact.trim() !== '' &&
     data.value.license.trim() !== '' &&
+    data.value.qualification.trim() !== '' &&
     data.value.department_id !== '' &&
     data.value.specialization_id !== '' &&
     data.value.experience !== '' &&
@@ -89,6 +93,7 @@ function clearData(){
     data.value.password = ''
     data.value.contact = ''
     data.value.license = ''
+    data.value.qualification = ''
     data.value.department_id = ''
     data.value.specialization_id = '' 
     data.value.experience = ''
@@ -181,12 +186,10 @@ async function register_doc(){
         if(typeof msg === 'object'){
             if(msg?.full_name){
                 msg = msg.full_name
-                // data.value.full_name = ''
                 data_invalid_flag.value.full_name = true
             }
             if(msg?.email){
                 msg = "In Email Address " + msg.email.toLowerCase()
-                // data.value.email = ''
                 data_invalid_flag.value.email = true
             }
             if(msg?.password){
@@ -202,13 +205,15 @@ async function register_doc(){
             }
             if(msg?.gender){
                 msg = msg.gender
-                // data.value.gender = ''
                 data_invalid_flag.value.gender = true
             }
             if(msg?.license){
                 msg = msg.license
-                // data.value.license = ''
                 data_invalid_flag.value.license = true
+            }
+            if(msg?.qualification){
+                msg = msg.qualification
+                data_invalid_flag.value.qualification = true
             }
             if(msg?.department_id){
                 msg = msg.department_id
@@ -315,23 +320,18 @@ async function register_doc(){
                     </div>
 
                     <div class="col-md-4 mb-2">
+                        <label class="form-label fw-semibold small highlight-text">Qualification</label>
+                        <input v-model="data.qualification" type="text" class="form-control custom-input" 
+                        :class="{ 'filled': data.qualification.trim() }, {'unfilled': data_invalid_flag.qualification}" placeholder="e.g. MBBS, MD" required>
+                    </div>
+
+                    <div class="col-md-3 mb-2">
                         <label class="form-label fw-semibold small highlight-text">License Number</label>
                         <input v-model="data.license" type="text" class="form-control custom-input" 
                         :class="{ 'filled': data.license.trim() }, {'unfilled': data_invalid_flag.license}" placeholder="e.g. DOC-123456" required>
                     </div>
 
-                    <!-- <div class="col-md-4 mb-2">
-                        <label class="form-label fw-semibold small highlight-text">Gender</label>
-                        <select class="form-select custom-input" 
-                        :class="{ 'filled': data.gender.trim() }, {'unfilled': data_invalid_flag.gender}" v-model="data.gender" required>
-                            <option value="" disabled selected hidden>Select Gender</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="trans">Trans</option>
-                        </select>
-                    </div> -->
-
-                    <div class="col-md-4 mb-2">
+                    <div class="col-md-3 mb-2">
                         <label class="form-label fw-semibold small highlight-text">Gender</label>
                         <VueSelect
                         v-model="data.gender"
@@ -341,7 +341,7 @@ async function register_doc(){
                         />
                     </div>
 
-                    <div class="col-md-4 mb-2">
+                    <div class="col-md-2 mb-2">
                         <label class="form-label fw-semibold small highlight-text">Years of Experience</label>
                         <input v-model="data.experience" type="number" class="form-control custom-input" 
                         :class="{ 'filled': data.experience }, {'unfilled': data_invalid_flag.experience}" placeholder="e.g. 20" required>

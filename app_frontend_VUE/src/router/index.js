@@ -3,6 +3,7 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import Home from '@/views/Home.vue'
 import Login from '@/views/Login.vue'
 import PatientRegister from '@/views/RegisterPatient.vue'
+
 import AdminDashboard from '@/views/dashboards/AdminDashboard.vue'
 import DoctorDashboard from '@/views/dashboards/DoctorDashboard.vue'
 import PatientDashboard from '@/views/dashboards/PatientDashboard.vue'
@@ -15,6 +16,16 @@ import ADdoctors from "@/components/admin_components/doctors.vue"
 import ADeditDoc from "@/components/admin_components/edit_doctor.vue"
 import ADeditPat from "@/components/admin_components/edit_patient.vue"
 import ADregDoc from "@/components/admin_components/register_doctor.vue"
+
+import DRappointments from '@/components/doctor_components/appointments_home.vue'
+import DRupcomingAp from '@/components/doctor_components/upcoming.vue'
+import DRavailability from '@/components/doctor_components/availability.vue'
+import DRpatients from "@/components/doctor_components/assigned_patients.vue"
+import DRpatientTreatment from "@/components/doctor_components/update_patient_history.vue"
+import DRpatientTreatmentHist from "@/components/doctor_components/patient_history.vue"
+
+import PAdoctors from '@/components/patient_components/doctors_list.vue'
+import PAappointments from '@/components/patient_components/book_appointments.vue'
 
 const routes = [
   { 
@@ -45,7 +56,7 @@ const routes = [
       },
       {
         path: "appointments",
-        name: "Appointments_Dashboard",
+        name: "AdminAppointments",
         component: ADappointments,
         children:[
           {
@@ -102,13 +113,80 @@ const routes = [
     path: '/dashboard/patient', 
     name: "Patient_Dashboard",
     meta: { requiresAuth: true, role: 'patient' },
-    component: PatientDashboard
+    component: PatientDashboard,
+    children: [
+      {
+        path: "",
+        name: "Patient_dashboard_home",
+        redirect: "/dashboard/patient/doctor-list"
+      },
+      {
+        path: "doctor-list",
+        name: "PatientCheckDoctors",
+        component: PAdoctors
+      },
+      {
+        path: "book-appointment",
+        name: "PatientBookAppointments",
+        component: PAappointments
+      }
+
+    ]
   },
   {
     path: '/dashboard/doctor', 
     name: "Doctor_Dashboard",
     meta: { requiresAuth: true, role: 'doctor' },
-    component: DoctorDashboard
+    component: DoctorDashboard,
+    children:[
+      {
+        path: "",
+        name: "Doctor_dashboard_home",
+        redirect: "/dashboard/doctor/appointments"
+      },
+      {
+        path: "appointments",
+        name: "DoctorAppointments",
+        component: DRappointments,
+        children:[
+          {
+            path: "",
+            name: "DrAppointmentsHome",
+            redirect: "/dashboard/doctor/appointments/upcoming"
+          },
+          {
+            path: "upcoming",
+            name: "DoctorUpcommingAppointments",
+            component: DRupcomingAp,
+          },
+          // {
+          //   path: "patient-treatment",
+          //   name: "DoctorPatientTreatment",
+          //   component: DRpatientTreatment,
+          // }
+        ]
+      },
+      {
+        path: "patient-treatment",
+        name: "DoctorPatientTreatment",
+        component: DRpatientTreatment,
+      },
+      {
+        path: "assigned-patients",
+        name: "DoctorAssignedPatiets",
+        component: DRpatients,
+      },
+      {
+        path: "patient-history",
+        name: "DoctorAssignedPatietHistory",
+        component: DRpatientTreatmentHist,
+      },
+      {
+        path: "availability",
+        name: "DoctorAvailability",
+        component: DRavailability,
+      },
+    ]
   },
   {
     path: '/:pathMatch(.*)*',

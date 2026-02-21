@@ -169,76 +169,78 @@ async function saveChanges(){
         <div class="row g-4">
             <div ref="alertPlaceholder"></div>
             <div class="d-flex align-items-center ">
-                    <div>
-                        <h3 class="h4 fw-bold mb-0" style="color: #220349;">Edit Patient</h3>
-                        <p class="text-muted small mb-0">Edit patient details to save</p>
-                    </div>
+                <div>
+                    <h3 class="h4 fw-bold mb-0" style="color: #220349;">Edit Patient</h3>
+                    <p class="text-muted small mb-0">Edit patient details to save</p>
                 </div>
-                <div class="card border-0 shadow-sm rounded-4 p-4">
-            <div class="col-12">
-                <form @submit.prevent="saveChanges">
-                    <div class="row g-2">
-                    <div class="col-md-3 mb-2">
-                        <label class="form-label fw-semibold small highlight-text">Patient ID</label>
-                        <input :value="currentPatientData?.patient_public_id" type="text" class="form-control custom-input" disabled>
-                    </div>
-                    
-                    <div class="col-md-4 mb-2">
-                        <label class="form-label fw-semibold small highlight-text">Full Name</label>
-                        <input v-model="data.full_name" type="text" class="form-control custom-input" 
-                        :class="{ 'filled': data.full_name.trim() }, {'unfilled': data_invalid_flag.full_name}"" placeholder="Please Fill Full Name" required>
-                    </div>
-                    
-                    <div class="col-md-5 mb-2">
-                        <label class="form-label fw-semibold small highlight-text">Email Address</label>
-                        <input :value="currentPatientData?.email" type="text" class="form-control custom-input" disabled>
-                    </div>
+            </div>
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <div class="col-12">
+                    <form @submit.prevent="saveChanges">
+                        <div class="row g-2">
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label fw-semibold small highlight-text">Patient ID</label>
+                            <input :value="currentPatientData?.patient_public_id" type="text" class="form-control custom-input" disabled>
+                        </div>
+                        
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label fw-semibold small highlight-text">Full Name</label>
+                            <input v-model="data.full_name" type="text" class="form-control custom-input" 
+                            :class="{ 'filled': data.full_name.trim() }, {'unfilled': data_invalid_flag.full_name}"" placeholder="Please Fill Full Name" required>
+                        </div>
+                        
+                        <div class="col-md-5 mb-2">
+                            <label class="form-label fw-semibold small highlight-text">Email Address</label>
+                            <input :value="currentPatientData?.email" type="text" class="form-control custom-input" disabled>
+                        </div>
 
-                    <div class="col-md-4 mb-2">
-                        <label class="form-label fw-semibold small highlight-text">Phone Number</label>
-                        <input v-model="data.contact" type="tel" class="form-control custom-input"
-                        :class="{ 'filled': data.contact.trim() }, {'unfilled': data_invalid_flag.contact}" placeholder="Please Fill Phone Number" required>
-                    </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label fw-semibold small highlight-text">Phone Number</label>
+                            <input v-model="data.contact" type="tel" class="form-control custom-input"
+                            :class="{ 'filled': data.contact.trim() }, {'unfilled': data_invalid_flag.contact}" placeholder="Please Fill Phone Number" required>
+                        </div>
 
-                    <div class="col-md-4 mb-2">
-                        <label class="form-label fw-semibold small highlight-text">D.O.B (Y-M-D)</label>
-                        <input type="text" class="form-control form-control-lg fs-6 custom-input" 
-                         :class="{ 'filled': data.dob.trim() }, {'unfilled': data_invalid_flag.dob}" placeholder="Please Fill D.O.B" onfocus="this.type='date'" onblur="this.type='text'" v-model="data.dob" required></input>
-                    </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label fw-semibold small highlight-text">D.O.B (Y-M-D)</label>
+                            <input type="text" class="form-control form-control-lg fs-6 custom-input" 
+                            :class="{ 'filled': data.dob.trim() }, {'unfilled': data_invalid_flag.dob}" placeholder="Please Fill D.O.B" onfocus="this.type='date'" onblur="this.type='text'" v-model="data.dob" required></input>
+                        </div>
 
-                    <div class="col-md-4 mb-2">
-                        <label class="form-label fw-semibold small highlight-text">Gender</label>
-                        <VueSelect
-                        v-model="data.gender"
-                        :options="genders"
-                        placeholder="Select Gender" class="custom-select" 
-                        :class="{ 'filled': data.gender }, {'unfilled': data_invalid_flag.gender}" required
-                        />
-                    </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label fw-semibold small highlight-text">Gender</label>
+                            <VueSelect
+                            v-model="data.gender"
+                            :options="genders"
+                            placeholder="Select Gender" class="custom-select" 
+                            :class="{ 'filled': data.gender }, {'unfilled': data_invalid_flag.gender}" required
+                            />
+                        </div>
 
-                    <div class="col-md-3 mb-2">
-                        <label class="form-label fw-semibold small highlight-text">Height (cm.)</label>
-                        <input v-model="data.height_cm" type="number" class="form-control custom-input" 
-                        :class="{ 'filled': data.height_cm }, {'unfilled': data_invalid_flag.height_cm}" placeholder="Please Fill Height" required>
-                    </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label fw-semibold small highlight-text">Height (cm.)</label>
+                            <input v-model="data.height_cm" type="number" class="form-control custom-input" 
+                            :class="{ 'filled': data.height_cm }, {'unfilled': data_invalid_flag.height_cm}" placeholder="Please Fill Height" required>
+                        </div>
 
-                    <div class="col-md-3">
-                        <label class="form-label fw-semibold small highlight-text">Weight (kg.)</label>
-                        <input v-model="data.weight_kg" type="number" class="form-control custom-input" 
-                        :class="{ 'filled': data.weight_kg }, {'unfilled': data_invalid_flag.weight_kg}" placeholder="Please Fill Weight" required>
-                    </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold small highlight-text">Weight (kg.)</label>
+                            <input v-model="data.weight_kg" type="number" class="form-control custom-input" 
+                            :class="{ 'filled': data.weight_kg }, {'unfilled': data_invalid_flag.weight_kg}" placeholder="Please Fill Weight" required>
+                        </div>
 
-                    <div class="col-12 mt-4 d-flex justify-content-end gap-2 ">
-                        <router-link to="/dashboard/admin/patients"><button type="button" class="btn px-4 rounded-pill clear-btn" @click="clearData">Back</button></router-link>
-                        <button type="submit" class="btn px-4 text-white rounded-pill shadow-sm submit-btn" v-if="isProcessing" :disabled="isProcessing" id="clicked">
-                            <span>Saving...</span>
-                        </button>
-                        <button type="submit" class="btn px-4 text-white rounded-pill shadow-sm submit-btn" v-else :disabled="!isDataValid">
-                            <span>Save</span>
-                        </button>
-                    </div>
-                    </div>
-                </form>
+                        <div class="col-12 mt-4 d-flex justify-content-end gap-2 ">
+                            <router-link to="/dashboard/admin/patients"><button type="button" class="btn px-4 rounded-pill clear-btn"> 
+                                Back
+                            </button></router-link>
+                            <button type="submit" class="btn px-4 text-white rounded-pill shadow-sm submit-btn" v-if="isProcessing" :disabled="isProcessing" id="clicked">
+                                <span>Saving...</span>
+                            </button>
+                            <button type="submit" class="btn px-4 text-white rounded-pill shadow-sm submit-btn" v-else :disabled="!isDataValid">
+                                <span>Save</span>
+                            </button>
+                        </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

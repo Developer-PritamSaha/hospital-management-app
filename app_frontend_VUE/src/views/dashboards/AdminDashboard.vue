@@ -69,8 +69,7 @@
             }
             // console.log(response.data)
         } catch (error){
-            router.replace('/')
-            console.log(error.response?.data)
+            logout()
         }  
     }
 
@@ -137,7 +136,7 @@
         } catch(error) {
             const msg = error.response?.data?.message || "Logout Failed"
             appendAlert(msg, "danger", "bi-exclamation-triangle-fill")
-            console.log(error.response?.data)
+            // console.log(error.response?.data)
         } finally {
             isLoggingOut.value = false
         }
@@ -187,19 +186,22 @@
             </button>
         </div>
         <div @click="refresh_page" class="px-4 mb-5 d-flex align-items-center logo-section" style="cursor: pointer;">
-            <img src="../../assets/favicon/icons8-health-96.png" alt="PentaFlow-Logo" width="40" height="40" class="d-inline-block  align-text-bottom">
+            <img src="@/assets/favicon/icons8-health-96.png" alt="PentaFlow-Logo" width="40" height="40" class="d-inline-block  align-text-bottom">
             <h4 class="mb-0 ps-1 fw-bold sidebar-text">PentaFlow</h4>   
         </div>
 
         <nav class="nav flex-column flex-grow-1 overflow-hidden">
             <small class="px-4 text-uppercase text-muted fw-bold mb-2 sidebar-text" style="font-size: 0.7rem;">Navigation</small>
+
             <router-link to="/dashboard/admin/appointments" class="nav-link" title="Appointments"><i class="bi bi-calendar2-check me-3"></i><span class="sidebar-text">Appointments</span></router-link>
-            <router-link to="/dashboard/admin/patients" class="nav-link" title="Patients"><i class="bi bi-people me-3"></i><span class="sidebar-text">Patients</span></router-link>
-            <router-link to="/dashboard/admin/doctors" class="nav-link" title="Doctors"><i class="bi bi-heart-pulse me-3"></i><span class="sidebar-text">Doctors</span></router-link>
+
+            <router-link to="/dashboard/admin/patients" class="nav-link" :class="{ 'router-link-active': $route.path.includes('/dashboard/admin/edit-patient') }" title="Patients"><i class="bi bi-people me-3"></i><span class="sidebar-text">Patients</span></router-link>
+
+            <router-link to="/dashboard/admin/doctors" class="nav-link" :class="{ 'router-link-active': $route.path.includes('/dashboard/admin/edit-doctor') }" title="Doctors"><i class="bi bi-heart-pulse me-3"></i><span class="sidebar-text">Doctors</span></router-link>
+            
             <router-link to="/dashboard/admin/add-doctor" class="nav-link" title="Add Doctor"><i class="bi bi-plus-square me-3"></i><span class="sidebar-text">Add Doctor</span></router-link>
 
             <div class="mt-5 px-4 border-top pt-4">
-                <!-- <a class="nav-link px-0"><i class="bi bi-gear me-3"></i><span class="sidebar-text">Profile</span></a> -->
                 <a class="nav-link px-0 text-danger" @click="logout" title="Logout"><i class="bi bi-power me-3"></i><span class="sidebar-text">Logout</span></a>
             </div>
         </nav>
@@ -217,7 +219,6 @@
                 <form @submit.prevent="searchQuery" class="search-bar w-100" style="max-width: 400px;">
                     <div class="input-group" >
                         <button type="submit" class="btn border-0" style="cursor:pointer;" title="Search"><i class="bi bi-search text-primary"></i></button>
-                        <!-- <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span> -->
                         <input type="text" class="form-control border-0 shadow-none" v-model="searchString"  :placeholder="searchPlaceholder" required>
                         <span class="input-group-text bg-transparent border-0" @click="clearSearchString" style="cursor:pointer;" v-if="searchString !== ''" title="Clear"><i class="bi bi-x-circle text-black"></i></span>
                     </div>

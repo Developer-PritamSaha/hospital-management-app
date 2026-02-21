@@ -22,6 +22,7 @@ doctorEditData_validator.add_argument("doctor_id", type=is_integer, required=Tru
 doctorEditData_validator.add_argument("full_name", type=check_full_name, required=True, help="{error_msg}")
 doctorEditData_validator.add_argument("gender", type=check_gender, required=True, help="{error_msg}")
 doctorEditData_validator.add_argument("license", type=non_empty_string, required=True, help="{error_msg}")
+doctorEditData_validator.add_argument("qualification", type=non_empty_string, required=True, help="{error_msg}")
 doctorEditData_validator.add_argument("specialization_id", type=is_integer, required=True, help="{error_msg}")
 doctorEditData_validator.add_argument("experience", type=is_integer, required=True, help="{error_msg}")
 doctorEditData_validator.add_argument("department_id", type=is_integer, required=True, help="{error_msg}")
@@ -51,14 +52,19 @@ class AdminDashboard(Resource):
         user_id = get_jwt_identity()
         if Roles_Users.user_role(int(user_id)) != "admin":
             abort(401, message="Admin Access needed.")
+        
+        user = User.query.filter_by(id=int(user_id)).first()
+        if not user:
+            abort(404, message="Admin not found.")
+
         try:
-            user = User.query.filter_by(id=int(user_id)).first()
-            
             return {
                 "email": user.email,
+                "is_active": user.is_active,
                 "role": 'admin',
                 "name": 'PentaFlow Admin'
             }, 200
+        
         except Exception as e:
             app.logger.exception(f"(Resource) AdminDashboard: (triggered) an error: {e}")
             abort(500, message="Admin data fetching failed.")
@@ -130,6 +136,7 @@ class AdminDoctorsData(Resource):
                         'specialization': Specialization.spec_name(d.specialization_id),
                         'gender': d.gender.title(),
                         'license': d.license,
+                        'qualification': d.qualification,
                         'experience': d.experience,
                         'description': d.description,
                         'contact': d.contact
@@ -263,6 +270,7 @@ class AdminManageDoctor(Resource):
                     'department_id': doc_dept.department_id,
                     'gender': doctor.gender,
                     'license': doctor.license,
+                    'qualification': doctor.qualification,
                     'experience': doctor.experience,
                     'description': doctor.description,
                     'contact': doctor.contact
@@ -352,6 +360,7 @@ class AdminManageDoctor(Resource):
             doctor_exist.full_name = args["full_name"].title()
             doctor_exist.gender = args["gender"]
             doctor_exist.license = args["license"]
+            doctor_exist.qualification = args["qualification"].upper()
             doctor_exist.specialization_id = args["specialization_id"]
             doctor_exist.experience = args["experience"]
             doctor_exist.description = args["description"]

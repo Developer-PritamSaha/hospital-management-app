@@ -1,4 +1,5 @@
 from .login_reg_auth import PatientRegistration, DoctorRegistration, UserLogin, UserLogout, TokenRefresher, UserTokenRole, UserLogoutEverywhere
-from .dashboard_handler import UserDashboard
 from .admin_dashboard import AdminDashboard, AdminPatientsData, AdminDoctorsData, StatsCount, DepartmentList, SpecializationList, AdminManageDoctor, AdminManagePatient
-from .search_handler import AdminSearchPatientsData, AdminSearchDoctorsData
+from .doctor_dashboard import DoctorDashboard, DocStatsCount, DoctorManageAvailability, DoctorManageAppointments, DoctorAssignedPatient, DoctorPatientTreatmentHistory, PatientAppointmentTreatmentData
+from .patient_dashboard import PatientDashboard, PatientAvailableDoctors, PatientBookAppointment
+from .search_handler import AdminSearchPatientsData, AdminSearchDoctorsData, DoctorSearchAssignedPatientsData, DoctorSearchUpcomingAppointments

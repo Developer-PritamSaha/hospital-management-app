@@ -1,16 +1,64 @@
 from ..extensions import db
 from flask import current_app as app
+from .login_model import Doctor
+from datetime import date, time, timedelta
 
 class Availability(db.Model):
     __tablename__ = 'availability'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    doctor_id = db.Column(db.Integer, db.ForeignKey("doctor.id", ondelete="CASCADE"), nullable=False) 
-    date = db.Column(db.DateTime, nullable=False)
-    time = db.Column(db.DateTime, nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey("doctor.id", ondelete="CASCADE"), nullable=False, index=True) 
+    slot_id = db.Column(db.String(30), nullable=False, index=True)
+    date = db.Column(db.Date, nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
     diagonisis_limit = db.Column(db.Integer, nullable=False, default=0)
     appointments_count = db.Column(db.Integer, nullable=False, default=0)
     status = db.Column(db.Boolean, nullable=False, default=False)
-    
+
+    @classmethod
+    def create_default_availability(cls, doc_id: int):
+        '''Creates default 7 days x 3 time slots into the database for the respective doctor else raises Exception'''
+
+        doc = Doctor.query.filter_by(id=doc_id).first()
+        if not doc:
+            raise Exception("Doctor not found in the database to assign availability.")
+        
+        try:
+            default_date = date(2026,1,5)
+            default_time_slots = [(time(9, 0), time(12, 0)), (time(14, 0), time(17, 0)), (time(19, 0), time(22, 0)),]
+            for i in range(0,7):
+                for j in range(0,3):
+                    new_slot = Availability(
+                        doctor_id = doc_id,
+                        slot_id = f"d{i+1}s{j+1}",
+                        date = default_date + timedelta(days=i),
+                        start_time = default_time_slots[j][0],
+                        end_time = default_time_slots[j][1]
+                    )
+
+                    db.session.add(new_slot)
+                    db.session.flush()
+
+        except Exception as e:
+            db.session.rollback()
+            app.logger.exception(f"(Method) Availability.create_default_availability(): (triggered) default availability commit rollback: (cause) {e}")
+            raise Exception(e)
+        else:
+            db.session.commit()
+
+    @classmethod
+    def check_status(cls, docId: int, slotId: str):
+        '''Checks the doctor availability status for a time slot and returns the status'''
+       
+        doc_availability = Availability.query.filter_by(doctor_id=docId, slot_id=slotId).first()
+       
+        # Checks if the max patient appointment limit for status
+        if (doc_availability.appointments_count < doc_availability.diagonisis_limit) and (doc_availability.status):
+            return True
+        else:
+            return False 
+
+
 class Department(db.Model):
     __tablename__ = 'department'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

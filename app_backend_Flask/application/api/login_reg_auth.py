@@ -32,6 +32,7 @@ doctorData_validator.add_argument("email", type=email_validator, required=True, 
 doctorData_validator.add_argument("password", type=validate_passwd, required=True, help="{error_msg}")
 doctorData_validator.add_argument("gender", type=check_gender, required=True, help="{error_msg}")
 doctorData_validator.add_argument("license", type=non_empty_string, required=True, help="{error_msg}")
+doctorData_validator.add_argument("qualification", type=non_empty_string, required=True, help="{error_msg}")
 doctorData_validator.add_argument("specialization_id", type=is_integer, required=True, help="{error_msg}")
 doctorData_validator.add_argument("experience", type=is_integer, required=True, help="{error_msg}")
 doctorData_validator.add_argument("department_id", type=is_integer, required=True, help="{error_msg}")
@@ -167,6 +168,7 @@ class DoctorRegistration(Resource):
                 full_name = args["full_name"].title(),
                 gender = args["gender"],
                 license = args["license"],
+                qualification = args["qualification"].upper(),
                 experience = args["experience"],
                 description = args["description"],
                 contact = args["contact"]
@@ -180,6 +182,8 @@ class DoctorRegistration(Resource):
             db.session.add(Departments_Doctors(doctor_id=new_doctor_data.id, department_id=args["department_id"]))
             db.session.flush()
 
+            Availability.create_default_availability(new_doctor_data.id)
+            
             save_credentials(args["email"],args["password"],f'./doctor_credentials/{doc_public_id}_cred.txt',f"[ {args["full_name"].title().replace(" ","_")} ({doc_public_id}) ] doctor's")
             
         except Exception as e:

@@ -97,6 +97,17 @@ def is_valid_date(date_string):
     except ValueError as e:
         raise ValueError(e)
 
+def is_valid_time(time_string):
+    """
+    Checks if the given string is a valid time in 'HH:MM' 24 hour format.
+    """
+    try:
+        time_str = non_empty_string(time_string, "Time")
+        time = datetime.strptime(time_str, '%H:%M').time()
+        return(time)
+    except ValueError as e:
+        raise ValueError(e)
+
 def is_integer(v, min_val=None, max_val=None):
     try:
         if isinstance(v, bool):

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted} from "vue";
+import router from "@/router";
 import axios_instance from "@/axiosSetup";
 import { useGlobalTemp } from '@/stores/temp_data';
 
@@ -12,11 +13,11 @@ const data = ref({
     error: null,
 })
 
-async function loadDoctors() {
+async function loadAvailableDoctors() {
     data.value.isLoading = true
     data.value.error = null
     try {
-        const response = await axios_instance.get("/api/dashboard/admin/doctors")
+        const response = await axios_instance.get("/api/dashboard/patient/doctor-list")
         data.value.docCount = response.data.count
         data.value.doctors = response.data.doctors
     } catch (err) {
@@ -74,7 +75,6 @@ function appendAlert(message, type, icon) {
   }, 5000)
 }
 
-
 // Action Handlers
 
 // Handle Doctor Info
@@ -83,75 +83,22 @@ const selectDoc = (doctor) => {
     doctorToBeSelected.value = doctor
 }
 
-// Handle Doctor Edit 
-function editDoctor(doctor){
-    globalTemp.set("doctor_id", doctor.doctor_id)
+// Handle Doctor Booking
+function bookAppointment(doctor){
+    globalTemp.set("doctor_public_id", doctor.doctor_public_id)
+    router.replace('/dashboard/patient/book-appointment')
 }
 
-// Handle Doctor Delete
-const doctorToBeDeleted = ref(null)
-const chooseDeleteDoc = (doctor) => {
-    doctorToBeDeleted.value = doctor
-}
-async function deleteDoctor() {
-    if (!doctorToBeDeleted.value) return
-    
-    try {
-        const response = await axios_instance.delete("/api/dashboard/admin/doctor", 
-          {
-            params: {
-                "doctor_user_id": doctorToBeDeleted.value.user_id
-            }
-          }
-        )
-        
-        // Refresh the doctor list
-        loadDoctors()
-        appendAlert(`${doctorToBeDeleted.value.full_name}(${doctorToBeDeleted.value.doctor_public_id}) has been deleted successfully.`,'success',"bi-check-circle")
-    } catch (err) {
-        appendAlert(`${doctorToBeDeleted.value.full_name}(${doctorToBeDeleted.value.doctor_public_id}) deletion failed.`, "danger", "bi-exclamation-triangle")
-    } finally{
-        doctorToBeDeleted.value = null
-    }
-}
-
-// Handle Doctor block or unblock
-async function blockDoctor(doctor) {
-    try {
-        const response = await axios_instance.post("/api/dashboard/admin/doctor", 
-          {
-            "doctor_user_id": doctor.user_id,
-            "is_active": !doctor.is_active
-          }
-        )
-        if(doctor.is_active){
-            appendAlert(`${doctor.full_name}(${doctor.doctor_public_id}) has been blocked successfully.`,'success',"bi-check-circle")
-        } else{
-            appendAlert(`${doctor.full_name}(${doctor.doctor_public_id}) has been unblocked successfully.`,'success',"bi-check-circle")
-        }
-
-        doctor.is_active = !doctor.is_active
-
-    } catch (err) {
-        if(doctor.is_active){
-            appendAlert(`${doctor.full_name}(${doctor.doctor_public_id}) blocking failed.`, "danger", "bi-exclamation-triangle")
-        } else{
-            appendAlert(`${doctor.full_name}(${doctor.doctor_public_id}) unblocking failed.`, "danger", "bi-exclamation-triangle")
-        }
-    }
-}
 
 onMounted(() => {
-    
-    if(globalTemp.get('DoctorEditStatus') === 'success'){
-        appendAlert(`${globalTemp.get('DoctorName')} edited successfully!`, "info", "bi-check-circle")
-        globalTemp.reset('DoctorEditStatus')
-        globalTemp.reset('DoctorName')
-    }
 
-    if(globalTemp.get('DoctorRegStatus') === 'success'){
-        appendAlert("Doctor registered successfully!", "success", "bi-check-circle")
-        globalTemp.reset('DoctorRegStatus')
+    if(globalTemp.get('PatientBookingStatus') === 'success'){
+        appendAlert(`Doctor Appointment on ${globalTemp.get('BookingDate')} from (${globalTemp.get('BookingStartTime')} - ${globalTemp.get('BookingEndTime')}) booked successfully!`, "info", "bi-check-circle")
+
+        globalTemp.reset('PatientBookingStatus')
+        globalTemp.reset('BookingDate')
+        globalTemp.reset('BookingStartTime')
+        globalTemp.reset('BookingEndTime')
     }
 
     if(globalTemp.get('searchResource') === 'doctor'){
@@ -160,12 +107,12 @@ onMounted(() => {
         loadFilteredDoctors()
     }
     else{
-        loadDoctors()
+        loadAvailableDoctors()
     }
 })
 
 const refreshDoctors = () => {
-  loadDoctors()
+  loadAvailableDoctors()
 }
 
 </script>
@@ -176,7 +123,7 @@ const refreshDoctors = () => {
             <div ref="alertPlaceholder"></div>
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <div class="d-flex align-items-center">
-                   <h2 class="h4 fw-bold" style="color: #220349;">Doctor Management</h2> 
+                   <h2 class="h4 fw-bold" style="color: #220349;">Available Doctors</h2> 
                    
                     <button class="btn btn-sm border-0 text-primary" 
                     @click="refreshDoctors" v-if="!data.isLoading" title="Refresh">
@@ -201,8 +148,8 @@ const refreshDoctors = () => {
                                 <th>License</th>
                                 <th>Specialization</th>
                                 <th>Experience</th>
-                                <th>Block/Unblock</th>
-                                <th class="text-center">Actions</th>
+                                <th class="text-center">Consult</th>
+                                <th class="text-center">Info</th>
                             </tr>
                         </thead>
 
@@ -223,7 +170,7 @@ const refreshDoctors = () => {
                                 <td colspan="8" class="py-5 text-center text-primary fw-medium">No doctor registered yet.</td>
                             </tr>
 
-                            <tr v-else v-for="(doctor) in data.doctors" :key="doctor.doctor_id">
+                            <tr v-if="!data.isLoading && !data.error" v-for="(doctor) in data.doctors" :key="doctor.doctor_id">
                                 <td class="text-muted fw-bold">{{ doctor.doctor_public_id }}</td>
                                 <td>
                                     <div class="d-flex flex-column">
@@ -237,21 +184,13 @@ const refreshDoctors = () => {
                                 <td><span class="text-success fw-medium">{{ doctor.license }}</span></td>
                                 <td><span class="spec-tag">{{ doctor.specialization }}</span></td>
                                 <td><span class="fw-medium">{{ doctor.experience }} yrs</span></td>
-                                <td>
-                                  <button @click="blockDoctor(doctor)" class="border-0 btn" title="Block/Unblock">
-                                    <span class="status-pill" :class="doctor.is_active ? 'active' : 'inactive'">
-                                        {{ doctor.is_active ? "Active" : "Inactive" }}
-                                    </span>
+                                <td class="text-center">
+                                  <button @click="bookAppointment(doctor)" class="border-2 btn-primary btn-ouline-info fw-bold btn rounded-pill" title="Book Appointment">
+                                    Book Appointment
                                   </button>
                                 </td>
                                 <td>
                                     <div class="action-buttons">
-                                        <router-link to="/dashboard/admin/edit-doctor"><button @click="editDoctor(doctor)" class="btn-action edit" title="Edit">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button></router-link>
-                                        <button class="btn-action delete" title="Delete" data-bs-toggle="modal" data-bs-target="#deleteDocModal" @click="chooseDeleteDoc(doctor)">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
                                         <button class="btn-action info" title="Info" data-bs-toggle="modal" data-bs-target="#infoDocModal" @click="selectDoc(doctor)">
                                             <i class="bi bi-info-circle"></i>
                                         </button>
@@ -304,24 +243,18 @@ const refreshDoctors = () => {
                             </div>
 
                             <div class="col-md-4 mb-2">
-                                <label class="form-label fw-bold small highlight-text">Qualification</label>
-                                <input :value="doctorToBeSelected.qualification" type="text" class="form-control bg-light fw-semibold" style="border: 1px solid #b59ff3"  
-                                disabled>
-                            </div>
-
-                            <div class="col-md-3 mb-2">
                                 <label class="form-label fw-bold small highlight-text">License Number</label>
                                 <input :value="doctorToBeSelected.license" type="text" class="form-control bg-light fw-semibold" style="border: 1px solid #b59ff3"  
                                 disabled>
                             </div>
 
-                            <div class="col-md-2 mb-2">
+                            <div class="col-md-4 mb-2">
                                 <label class="form-label fw-bold small highlight-text">Gender</label>
                                 <input :value="doctorToBeSelected.gender" type="text" class="form-control bg-light fw-semibold" style="border: 1px solid #b59ff3" 
                                 disabled>
                             </div>
 
-                            <div class="col-md-3 mb-2">
+                            <div class="col-md-4 mb-2">
                                 <label class="form-label fw-bold small highlight-text">Years of Experience</label>
                                 <input :value="doctorToBeSelected.experience" type="text" class="form-control bg-light fw-semibold" style="border: 1px solid #b59ff3" 
                                 disabled>
@@ -334,41 +267,11 @@ const refreshDoctors = () => {
                             </div>
                         </div>
                       </div>
-                      
-                      <div class="modal-footer border-0 d-flex justify-content-center pb-4">
-                          <button type="button" class="btn px-4 mx-2 rounded-pill shadow-sm close-btn" data-bs-dismiss="modal">Close</button>
-                          <router-link to="/dashboard/admin/edit-doctor"><button @click="editDoctor(doctorToBeSelected)" type="button" class="btn px-4 mx-2 rounded-pill shadow-sm edit-btn" data-bs-dismiss="modal">
-                              Edit
-                          </button></router-link>
-                      </div>
+            
                   </div>
               </div>
             </div>
 
-            <!-- Confirm Doctor Deletion Modal -->
-            <div class="modal fade" id="deleteDocModal" tabindex="-1" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered modal-sm"> 
-                <div class="modal-content border-0 shadow-lg">
-                      <div class="modal-body text-center p-3">
-                          <div class="delete-icon-wrapper mb-3">
-                              <i class="bi bi-exclamation-circle text-danger"></i>
-                          </div>
-                          
-                          <h5 class="fw-bold mb-2">Confirm Delete</h5>
-                          <p class="text-muted mb-0">Are you sure you want to delete</p>
-                          <p class="fw-bold text-dark" v-if="doctorToBeDeleted">{{ doctorToBeDeleted.full_name }}?</p>
-                          <small class="text-secondary d-block mt-2">This action cannot be undone.</small>
-                      </div>
-                      
-                      <div class="modal-footer border-0 d-flex justify-content-center pb-4">
-                          <button type="button" class="btn px-4 mx-2 rounded-pill shadow-sm close-btn" data-bs-dismiss="modal">Cancel</button>
-                          <button @click="deleteDoctor" type="button" class="btn px-4 mx-2 rounded-pill shadow-sm delete-btn" data-bs-dismiss="modal">
-                              Delete
-                          </button>
-                      </div>
-                  </div>
-              </div>
-            </div>
         </div>
     </div>
 </template>
@@ -481,16 +384,16 @@ const refreshDoctors = () => {
 .btn-action i { font-size: 1.1rem; }
 
 .edit-btn {
-    background: #915de4; 
+    background: #a274ec; 
     color: white;
-    border: 1px solid rgb(136, 150, 148);
+    border: 1px solid rgb(128, 124, 143);
     border-radius: 8px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
 }
 .edit-btn:hover {
-    background: rgb(156, 107, 236);
+    background: rgb(152, 96, 241);
     border: 1px solid rgb(99, 96, 109);
     color:white;
 }

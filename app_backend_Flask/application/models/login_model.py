@@ -164,6 +164,7 @@ class Doctor(db.Model):
     full_name = db.Column(db.String(100), nullable=False, index=True)
     gender = db.Column(db.String(20), nullable=False)
     license = db.Column(db.String(40), nullable=False, unique=True, index=True)
+    qualification = db.Column(db.String(100), nullable=False)
     experience = db.Column(db.Integer, nullable=False)
     description = db.Column(db.Text, nullable=False)
     contact = db.Column(db.String(40), nullable=False, index=True)
