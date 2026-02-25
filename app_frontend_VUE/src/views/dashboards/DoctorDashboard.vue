@@ -202,7 +202,6 @@
             <router-link to="/dashboard/doctor/availability" class="nav-link" title="Manage Availability"><i class="bi bi-calendar2-week me-3"></i><span class="sidebar-text">Manage Availability</span></router-link>
 
             <div class="mt-5 px-4 border-top pt-4">
-                <router-link to="/dashboard/doctor/profile" class="nav-link px-0" style="color: blueviolet;" title="Profile"><i class="bi bi-person-circle me-3"></i><span class="sidebar-text">Profile</span></router-link>
                 <a class="nav-link px-0 text-danger" @click="logout" title="Logout"><i class="bi bi-power me-3"></i><span class="sidebar-text">Logout</span></a>
             </div>
         </nav>
@@ -210,7 +209,7 @@
 
     <main class="main-container">
         <div ref="alertPlaceholder"></div>
-        <header class=" ps-1 p-3 d-flex align-items-center justify-content-between bg-white shadow-sm">
+        <header class="sticky-top ps-1 p-3 d-flex align-items-center justify-content-between bg-white shadow-sm">
             <div class="d-flex align-items-center flex-grow-1">
                 <button class="btn me-3 border-0" @click="toggleSidebar">
                     <i class="bi bi-chevron-bar-left fs-5 left-toggle text-secondary" :class="{ 'show': !isSidebarOpen }" title="Close Sidebar"></i>

@@ -25,7 +25,11 @@ import DRpatientTreatment from "@/components/doctor_components/update_patient_hi
 import DRpatientTreatmentHist from "@/components/doctor_components/patient_history.vue"
 
 import PAdoctors from '@/components/patient_components/doctors_list.vue'
-import PAappointments from '@/components/patient_components/book_appointments.vue'
+import PAbookAppointments from '@/components/patient_components/book_appointments.vue'
+import PAupcomingappointments from '@/components/patient_components/upcoming_appointments.vue'
+import PAdepartments from '@/components/patient_components/department_list.vue'
+import PAhistoryData from '@/components/patient_components/treatment_history.vue'
+import PAprofile from '@/components/patient_components/profile.vue'
 
 const routes = [
   { 
@@ -118,7 +122,7 @@ const routes = [
       {
         path: "",
         name: "Patient_dashboard_home",
-        redirect: "/dashboard/patient/doctor-list"
+        redirect: "/dashboard/patient/appointments"
       },
       {
         path: "doctor-list",
@@ -128,7 +132,27 @@ const routes = [
       {
         path: "book-appointment",
         name: "PatientBookAppointments",
-        component: PAappointments
+        component: PAbookAppointments
+      },
+      {
+        path: "appointments",
+        name: "PatientUpcomingAppointments",
+        component: PAupcomingappointments
+      },
+      {
+        path: "department-list",
+        name: "PatientDepartmentList",
+        component: PAdepartments
+      },
+      {
+        path: "history",
+        name: "PatientMedicalHistory",
+        component: PAhistoryData
+      },
+      {
+        path: "profile",
+        name: "PatientProfile",
+        component: PAprofile
       }
 
     ]

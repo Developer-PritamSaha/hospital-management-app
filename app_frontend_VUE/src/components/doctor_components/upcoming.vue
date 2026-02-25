@@ -88,14 +88,18 @@ async function changeAppointmentStatus(appoint_pub_id, appoint_status) {
         loadAppointments()
     } catch (err) {
         let msg = err.response?.data?.message || "Failed to change the appointment status"
-        if(err.response?.status === 400){
+        if(err.response?.status === 409){
+            triggerAlert(msg, "warning", "bi-exclamation-octagon")
+            loadAppointments()
+        } 
+        else if(err.response?.status === 400){
             triggerAlert(msg, "warning", "bi-exclamation-octagon")
         } 
         else {
             if(appoint_status === 'completed'){
-                triggerAlert(`Appointment ${appoint_pub_id} can not marked as completed.`, "danger", "bi-exclamation-triangle")
+                triggerAlert(`Appointment ${appoint_pub_id} cannot be marked as completed.`, "danger", "bi-exclamation-triangle")
             } else{
-                triggerAlert(`Appointment ${appoint_pub_id} can not canceled.`, "danger", "bi-exclamation-triangle")
+                triggerAlert(`Appointment ${appoint_pub_id} cannot be canceled.`, "danger", "bi-exclamation-triangle")
             }
         }
     }
@@ -110,7 +114,7 @@ function updatePatientHistory(ap) {
 
 onMounted(() => {
      if(globalTemp.get('PatientHistoryUpdated') === 'success'){
-        triggerAlert(`${globalTemp.get('PatDetails').name}(${globalTemp.get('PatDetails').pub_id}) updated successfully!`, "info", "bi-check-circle")
+        triggerAlert(`${globalTemp.get('PatDetails').name}(${globalTemp.get('PatDetails').pub_id}) history updated successfully!`, "info", "bi-check-circle")
         globalTemp.reset('PatientHistoryUpdated')
         globalTemp.reset('PatDetails')
     }
@@ -165,19 +169,27 @@ const refreshAppointments = () => {
 
                     <tbody>
                         <tr v-if="data.isLoading">
-                            <td colspan="7" class="py-5 text-center text-muted">
+                            <td colspan="6" class="py-5 text-center text-muted">
                                 <div class="spinner-border spinner-border-sm me-2"></div> Loading...
                             </td>
                         </tr>
 
                         <tr v-else-if="data.error">
-                            <td colspan="7" class="py-5 text-center text-danger fw-medium">
+                            <td colspan="6" class="py-5 text-center text-danger fw-medium">
                                 {{ data.error }}
                             </td>
                         </tr>
 
                         <tr v-else-if="data.appointCount === 0">
-                            <td colspan="7" class="py-5 text-center text-primary fw-medium">No patient booked appointment yet.</td>
+                            <td colspan="6" class="py-5">
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <img src="@/assets/images/undraw_medicine_hqqg.svg" 
+                                        class="img-fluid mb-4" 
+                                        style="max-width: 500px; width: 100%;" 
+                                        alt="No appointments">
+                                    <small class="fs-6 text-primary fw-medium">No patient booked appointment yet.</small>
+                                </div>
+                            </td>
                         </tr>
 
                         <tr v-else v-for="(appoint) in data.appointments" 

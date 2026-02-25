@@ -211,10 +211,10 @@
             <!-- Left panel -->
              <div class="col-md-6 rounded-4 d-flex justify-content-center align-items-center flex-column left-panel">
                 <div class="featured-image mb-2 p-2">
-                   <img src="../assets/images/undraw_donut-love_5r3x.svg" class="img-fluid mt-5" style="width: 550px">                 
+                   <img src="@/assets/images/undraw_donut-love_5r3x.svg" class="img-fluid mt-5" style="width: 550px">                 
                 </div>
                 <router-link to="/" class="navbar-brand d-flex align-items-center brand-logo">
-                    <p class="fw-bold fs-2 mt-5"><img src="../assets/favicon/icons8-health-96.png" alt="HMS-App-Logo" width="40" height="40" class="d-inline-block align-text-bottom">
+                    <p class="fw-bold fs-2 mt-5"><img src="@/assets/favicon/icons8-health-96.png" alt="HMS-App-Logo" width="40" height="40" class="d-inline-block align-text-bottom">
                     PentaFlow</p>
                 </router-link>
         

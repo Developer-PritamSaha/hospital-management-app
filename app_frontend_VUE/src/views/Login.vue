@@ -123,10 +123,10 @@
             <!-- Left panel -->
              <div class="col-md-6 rounded-4 d-flex justify-content-center align-items-center flex-column left-panel">
                 <div class="featured-image p-2">
-                   <img src="../assets/images/undraw_true-love_rap5.svg" class="img-fluid mt-5 mb-2" style="width: 550px">                 
+                   <img src="@/assets/images/undraw_true-love_rap5.svg" class="img-fluid mt-5 mb-2" style="width: 550px">                 
                 </div>
                 <router-link to="/" class="navbar-brand d-flex align-items-center mt-4 fs-2 fw-bold brand-logo">
-                    <p class=" fw-bold fs-2 mt-2"><img src="../assets/favicon/icons8-health-96.png" alt="HMS-App-Logo" width="40" height="40" class="d-inline-block align-text-bottom ">
+                    <p class="fw-bold fs-2 mt-2"><img src="@/assets/favicon/icons8-health-96.png" alt="HMS-App-Logo" width="40" height="40" class="d-inline-block align-text-bottom ">
                     PentaFlow</p>
                 </router-link>
                 

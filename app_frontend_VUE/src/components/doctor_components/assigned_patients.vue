@@ -136,19 +136,19 @@ const refreshPatients = () => {
 
                         <tbody>
                             <tr v-if="data.isLoading">
-                                <td colspan="7" class="py-5 text-center text-muted">
+                                <td colspan="8" class="py-5 text-center text-muted">
                                     <div class="spinner-border spinner-border-sm me-2"></div> Loading...
                                 </td>
                             </tr>
 
                             <tr v-else-if="data.error">
-                                <td colspan="7" class="py-5 text-center text-danger fw-medium">
+                                <td colspan="8" class="py-5 text-center text-danger fw-medium">
                                     {{ data.error }}
                                 </td>
                             </tr>
 
                             <tr v-else-if="data.patCount === 0">
-                                <td colspan="7" class="py-5 text-center text-primary fw-medium">No patient assigned yet.</td>
+                                <td colspan="8" class="py-5 text-center text-primary fw-medium">No patient assigned yet.</td>
                             </tr>
 
                             <tr v-else v-for="(patient) in data.assigned_patients" :key="patient.patient_public_id">

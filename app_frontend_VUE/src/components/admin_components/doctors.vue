@@ -434,11 +434,11 @@ const refreshDoctors = () => {
 /* Specialization Tag */
 .spec-tag {
     background: #f4f1f9;
-    padding: 2px 8px;
-    border-radius: 4px;
+    padding: 5px 8px;
+    border-radius: 6px;
     font-size: 0.8rem;
     font-weight: 500;
-    color: #475569;
+    color: #123567;
 }
 
 /* Action Buttons Styling */

@@ -95,8 +95,14 @@ api.add_resource(UserLogoutEverywhere, "/api/logout/all")
 ## Search APIs
 api.add_resource(AdminSearchPatientsData, "/api/dashboard/admin/patients/search")
 api.add_resource(AdminSearchDoctorsData, "/api/dashboard/admin/doctors/search")
+
 api.add_resource(DoctorSearchAssignedPatientsData, "/api/dashboard/doctor/assigned-patients/search")
 api.add_resource(DoctorSearchUpcomingAppointments, "/api/dashboard/doctor/appointments/search")
+
+api.add_resource(PatientSearchUpcomingAppointments, "/api/dashboard/patient/upcoming-appointments/search")
+api.add_resource(PatientSearchDepartments, "/api/dashboard/patient/departments/search")
+api.add_resource(PatientSearchDepartmentDoctors, "/api/dashboard/patient/doctor-list/search")
+api.add_resource(PatientSearchAppointmentHistory, "/api/dashboard/patient/appointment-history/search")
 
 ## Admin APIs
 api.add_resource(AdminDashboard, "/api/dashboard/admin")
@@ -120,7 +126,11 @@ api.add_resource(PatientAppointmentTreatmentData, "/api/dashboard/doctor/treatme
 ## Patient APIs
 api.add_resource(PatientDashboard, "/api/dashboard/patient")
 api.add_resource(PatientAvailableDoctors, "/api/dashboard/patient/doctor-list")
+api.add_resource(PatientUpcomingAppointments, "/api/dashboard/patient/upcoming-appointments")
 api.add_resource(PatientBookAppointment, "/api/dashboard/patient/book-appointment")
+api.add_resource(PatientDepartmentList, "/api/dashboard/patient/departments")
+api.add_resource(PatientAppointmentHistory, "/api/dashboard/patient/appointment-history")
+api.add_resource(PatientTreatmentData, "/api/dashboard/patient/appointment-treatment")
 
 if __name__ == '__main__':
   init_success = False

@@ -32,6 +32,7 @@ async function loadAvailabilities() {
         data.value.week_end_date = response.data?.week_end_date
         data.value.availabilities = response.data?.availabilities
     } catch (err) {
+        data.value.availCount = 0
         data.value.error = err.response?.data?.message || err.message
         appendAlert("Doctor availability schedule loading failed.", "danger", "bi-exclamation-triangle")
     } finally {
@@ -94,7 +95,7 @@ async function bookAppointment() {
         globalTemp.set('BookingDate', `${selectedSlot.value.slot_date}`)
         globalTemp.set('BookingStartTime', `${selectedSlot.value.slot_start_time}`)
         globalTemp.set('BookingEndTime', `${selectedSlot.value.slot_end_time}`)
-        router.replace("/dashboard/patient/doctor-list")
+        router.replace("/dashboard/patient/appointments")
 
         // appendAlert(`Slot ${selectedSlot.value.slot_id} booked!`, "success", "bi-check-circle")
 
@@ -128,6 +129,18 @@ const refreshAvailability = () => {
             <div ref="alertPlaceholder"></div>
             <div class="d-flex justify-content-between align-items-center mb-1">
                 <div class="d-flex align-items-center">
+                    <router-link v-if="globalTemp.get('from') == 'doctor-list'" to="/dashboard/patient/doctor-list">
+                        <button type="button" class="btn btn-sm border-0 text-secondary" title="Back">
+                            <i class="bi bi-arrow-left-square fs-4 pe-2"></i>
+                        </button>
+                    </router-link>
+
+                    <router-link v-else-if="globalTemp.get('from') == 'appointments'" to="/dashboard/patient/appointments">
+                        <button type="button" class="btn btn-sm border-0 text-secondary" title="Back">
+                            <i class="bi bi-arrow-left-square fs-4 pe-2"></i>
+                        </button>
+                    </router-link>
+
                    <h2 class="h4 fw-bold" style="color: #220349;">{{ data.doc_name }}'s Availability</h2> 
                    
                     <button class="btn btn-sm border-0 text-primary" 
@@ -217,7 +230,7 @@ const refreshAvailability = () => {
                     </table>
                 </div>
 
-                <div class="col-12 mt-2 d-flex justify-content-center gap-2 mb-2">
+                <div v-if="!data.isLoading & !data.error & data.availCount === 7" class="col-12 p-3 d-flex justify-content-center gap-2">
                     <router-link to="/dashboard/patient/doctor-list"><button type="button" class="btn px-4 rounded-pill clear-btn">
                         Back
                     </button></router-link>

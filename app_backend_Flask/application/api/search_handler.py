@@ -229,9 +229,21 @@ class DoctorSearchUpcomingAppointments(Resource):
         except ValueError:
             abort(400, message="'query' parameter should not be empty.")
 
+        searched_patient = Patient.query.filter(
+            or_(
+                Patient.full_name.contains(search_str.title()),
+                Patient.public_id.ilike(search_str)
+            )
+        ).first()
+
+        if not searched_patient:
+            searched_patient_id = -1
+        else:
+            searched_patient_id = searched_patient.id
 
         searched_appointments = Appointment.query.filter(
             or_(
+                Appointment.patient_id.ilike(searched_patient_id),
                 Appointment.date.contains(search_str),
                 Appointment.public_id.ilike(search_str),
                 Appointment.start_time.contains(search_str)
@@ -257,11 +269,8 @@ class DoctorSearchUpcomingAppointments(Resource):
             for ap in appointments:
                 if ap in searched_appointments:
                     patient = Patient.query.filter_by(id=ap.patient_id).first()
-                    if not patient:
-                        return{
-                            'message': "Patient not exist."
-                        }, 404
-                    else:
+
+                    if patient:
                         pat_age = current_datetime.year - patient.dob.year
 
                         appointments_data.append(
@@ -294,3 +303,339 @@ class DoctorSearchUpcomingAppointments(Resource):
         except Exception as e:
             app.logger.exception(f"(Resource) DoctorSearchUpcomingAppointments: (triggered) an error: {e}")
             abort(500, message="Upcoming Appointments search data fetching failed.")
+
+class PatientSearchUpcomingAppointments(Resource):
+    '''This resource consist of 'GET' method which checks 'access token' sent by the client and response with the respective filtered list of all upcoming appointments'''
+    @jwt_required()   
+    def get(self):
+        user_id = get_jwt_identity()
+        if Roles_Users.user_role(int(user_id)) != "patient":
+            abort(401, message="Patient Access needed.")
+
+        patient = Patient.query.filter_by(user_id=int(user_id)).first()
+        if not patient:
+             abort(404, message="Patient not found.")
+
+        try:
+            search_str = non_empty_string(request.args.get("query"))
+        except ValueError:
+            abort(400, message="'query' parameter should not be empty.")
+
+
+        searched_doctor = Doctor.query.filter(
+            or_(
+                Doctor.full_name.contains(search_str.title()),
+                Doctor.public_id.ilike(search_str)
+            )
+        ).first()
+
+        if not searched_doctor:
+            searched_doctor_id = -1
+        else:
+            searched_doctor_id = searched_doctor.id
+
+        searched_appointments = Appointment.query.filter(
+            or_(
+                Appointment.doctor_id.ilike(searched_doctor_id),
+                Appointment.date.contains(search_str),
+                Appointment.public_id.ilike(search_str),
+                Appointment.start_time.contains(search_str),
+                Appointment.status.ilike(search_str.lower())
+            )
+        ).all()
+
+        if len(searched_appointments) == 0:
+            abort(404, message="No Search Result Found.")
+
+        # Current weeks appointments
+        appointments = []
+
+        current_datetime = datetime.now()
+        weekday_index = int(current_datetime.strftime("%u")) - 1
+        current_week_start_date = current_datetime.date() - timedelta(days=weekday_index)
+        for i in range(0,7):
+            ap_date = current_week_start_date + timedelta(days=i)
+            ap = Appointment.query.filter_by(patient_id=patient.id,date=ap_date).all()
+            appointments += ap
+
+        try:
+            appointments_data = []
+            booked_appointments_data = []
+            for ap in appointments:
+                if ap in searched_appointments:
+                    doctor = Doctor.query.filter_by(id=ap.doctor_id).first()
+
+                    if doctor:
+                        if ap.status == "booked":
+                            booked_appointments_data.append(
+                                {
+                                    'appointment_public_id': ap.public_id,
+                                    'patient_public_id': patient.public_id,
+                                    'patient_full_name': patient.full_name,
+                                    'doctor_full_name': doctor.full_name,
+                                    'doctor_public_id': doctor.public_id,
+                                    'doctor_department': Departments_Doctors.dept_name(doctor.id),
+                                    'date': ap.date.strftime("%Y-%m-%d"),
+                                    'start_time': ap.start_time.strftime("%H:%M"),
+                                    'end_time': ap.end_time.strftime("%H:%M"),
+                                    'status': ap.status,
+                                }
+                            )
+                        else:
+                            appointments_data.append(
+                                {
+                                    'appointment_public_id': ap.public_id,
+                                    'patient_public_id': patient.public_id,
+                                    'patient_full_name': patient.full_name,
+                                    'doctor_full_name': doctor.full_name,
+                                    'doctor_public_id': doctor.public_id,
+                                    'doctor_department': Departments_Doctors.dept_name(doctor.id),
+                                    'date': ap.date.strftime("%Y-%m-%d"),
+                                    'start_time': ap.start_time.strftime("%H:%M"),
+                                    'end_time': ap.end_time.strftime("%H:%M"),
+                                    'status': ap.status,
+                                }
+                            )
+
+            appointments_data = booked_appointments_data + appointments_data
+
+            if len(appointments_data) == 0:
+                return{ "message":"No Search Result Found."}, 404
+            else:
+                return {
+                    "count": len(appointments_data),
+                    "week_start_date": current_week_start_date.strftime("%Y-%m-%d"),
+                    "week_end_date": (current_week_start_date + timedelta(days=6)).strftime("%Y-%m-%d"),
+                    "appointments": appointments_data
+                }, 200
+            
+        except Exception as e:
+            app.logger.exception(f"(Resource) PatientSearchUpcomingAppointments: (triggered) an error: {e}")
+            abort(500, message="Upcoming Appointments search data fetching failed.")
+
+class PatientSearchDepartments(Resource):
+    '''This resource consist of 'GET' method which checks 'access token' sent by the client and response with the respective searched department details'''
+    @jwt_required()   
+    def get(self):
+        user_id = get_jwt_identity()
+        if Roles_Users.user_role(int(user_id)) != "patient":
+            abort(401, message="Patient Access needed.")
+
+        try:
+            search_str = non_empty_string(request.args.get("query"))
+        except ValueError:
+            abort(400, message="'query' parameter should not be empty.")
+
+
+        searched_department = Department.query.filter(
+            Department.name.contains(search_str)
+        ).all()
+
+        if len(searched_department) == 0:
+            abort(404, message="No Search Result Found.")
+
+        try:
+            dept_data = []
+            for d in searched_department:
+                dept_data.append(
+                    {
+                        'id': d.id,
+                        'name': d.name,
+                        'description': d.description,
+                        'type': d.type
+                    }
+                )
+
+            return {
+                "count": len(dept_data),
+                "departments": dept_data
+            }, 200
+            
+        except Exception as e:
+            app.logger.exception(f"(Resource) PatientSearchDepartments: (triggered) an error: {e}")
+            abort(500, message="Department search data fetching failed.")
+
+class PatientSearchDepartmentDoctors(Resource):
+    '''This resource consist of 'GET' method which checks 'access token' sent by the client and response with the respective department filtered list of all available doctors data'''
+    @jwt_required()   
+    def get(self):
+        user_id = get_jwt_identity()
+        if Roles_Users.user_role(int(user_id)) != "patient":
+            abort(401, message="Patient Access needed.")
+
+        # Searches for the department first
+        try:
+            department_query = non_empty_string(request.args.get("department"))
+        except ValueError:
+            abort(400, message="'department' parameter should not be empty.")
+
+        searched_department = Department.query.filter(
+                Department.name.contains(department_query)
+        ).first()
+
+        if not searched_department:
+            abort(404, message="No Search Result Found.")
+
+        # Searches for the department doctor
+        try:
+            doctor_query = non_empty_string(request.args.get("query"))
+        except ValueError:
+            abort(400, message="'query' parameter should not be empty.")
+
+        searched_specialization = Specialization.query.filter(
+            Specialization.name.contains(doctor_query)
+        ).first()
+
+        if not searched_specialization:
+            searched_specialization_id = -1
+        else:
+            searched_specialization_id = searched_specialization.id
+        
+        searched_doctors = Doctor.query.filter(
+            or_(
+                Doctor.full_name.contains(doctor_query.title()),
+                Doctor.public_id.ilike(doctor_query),
+                Doctor.specialization_id.ilike(searched_specialization_id),
+                Doctor.qualification.contains(doctor_query.upper())
+            )
+        ).all()
+
+        if len(searched_doctors) == 0:
+            abort(404, message="No Search Result Found.")
+
+        dept_doctors_id = [d.doctor_id for d in (Departments_Doctors.query.filter_by(department_id=searched_department.id).all())]
+
+        try:
+            doctors_data = []
+            
+            for doc in searched_doctors:
+                if doc.id in dept_doctors_id:
+                    t = User.user_email(doc.user_id)
+                    if t[1] == True: # if the doctor is active
+                        doctors_data.append(
+                            {
+                                'doctor_public_id': doc.public_id,
+                                'full_name': doc.full_name,
+                                'department': searched_department.name,
+                                'specialization': Specialization.spec_name(doc.specialization_id),
+                                'qualification': doc.qualification,
+                                'gender': doc.gender.title(),
+                                'license': doc.license,
+                                'experience': doc.experience,
+                                'description': doc.description,
+                            }
+                        )
+
+            if len(doctors_data) == 0:
+                return{ "message":"No Search Result Found."}, 404
+            else:
+                return {
+                    "count": len(doctors_data),
+                    "department": searched_department.name,
+                    "doctors": doctors_data
+                }, 200
+            
+        except Exception as e:
+            app.logger.exception(f"(Resource) PatientSearchDepartmentDoctors: (triggered) an error: {e}")
+            abort(500, message="Upcoming Appointments search data fetching failed.")
+
+class PatientSearchAppointmentHistory(Resource):
+    '''This resource consist of 'GET' method which checks 'access token' sent by the client and response with the respective filtered list of all previous completed appointments history'''
+    @jwt_required()   
+    def get(self):
+        user_id = get_jwt_identity()
+        if Roles_Users.user_role(int(user_id)) != "patient":
+            abort(401, message="Patient Access needed.")
+
+        patient = Patient.query.filter_by(user_id=int(user_id)).first()
+        if not patient:
+             abort(404, message="Patient not found.")
+
+        try:
+            search_str = non_empty_string(request.args.get("query"))
+        except ValueError:
+            abort(400, message="'query' parameter should not be empty.")
+
+        # Searches the doctors by their department in the appointment history
+        searched_department = Department.query.filter(
+            Department.name.contains(search_str)
+        ).first()
+
+        if searched_department:
+            searched_dept_doctors = Departments_Doctors.query.filter_by(department_id=searched_department.id).all()
+            searched_appointments = []
+            for sdd in searched_dept_doctors:
+                searched_appointments += Appointment.query.filter(
+                    Appointment.patient_id == patient.id, 
+                    Appointment.status == "completed",
+                    Appointment.doctor_id == sdd.doctor_id
+                ).all()
+        else:
+        # Searches the doctors and appointments by their public_id or date in the appointment history
+            searched_doctor = Doctor.query.filter(
+                or_(
+                    Doctor.full_name.contains(search_str.title()),
+                    Doctor.public_id.ilike(search_str)
+                )
+            ).first()
+
+            if not searched_doctor:
+                searched_doctor_id = -1
+            else:
+                searched_doctor_id = searched_doctor.id
+
+            searched_appointments = Appointment.query.filter(
+                Appointment.patient_id == patient.id, 
+                Appointment.status == "completed",
+
+                or_(
+                    Appointment.doctor_id.ilike(searched_doctor_id),
+                    Appointment.date.contains(search_str),
+                    Appointment.public_id.ilike(search_str),
+                    Appointment.start_time.contains(search_str),
+                )
+            ).all()
+
+        if len(searched_appointments) == 0:
+            abort(404, message="No Search Result Found.")
+
+        try:
+            pat_appointments_history = []
+
+            for ap in searched_appointments:
+                ap_doc = Doctor.query.filter_by(id=ap.doctor_id).first()
+                if not ap_doc:
+                    doc_name = "Unknown"
+                    doc_pub_id = "NA"
+                    doc_dept = "NA"
+                else:
+                    doc_name = ap_doc.full_name
+                    doc_pub_id = ap_doc.public_id
+                    doc_dept = Departments_Doctors.dept_name(ap_doc.id)
+
+                pat_appointments_history.append(
+                    {
+                        'appointment_public_id': ap.public_id,
+                        'doctor_full_name': doc_name,
+                        'doctor_public_id': doc_pub_id,
+                        'doctor_department': doc_dept,
+                        'date': ap.date.strftime("%Y-%m-%d"),
+                        'start_time': ap.start_time.strftime("%H:%M"),
+                        'end_time': ap.end_time.strftime("%H:%M"),
+                    }
+                )
+
+            if len(pat_appointments_history) == 0:
+                return{ "message":"No Search Result Found."}, 404
+            else:
+                pat_appointments_history.reverse()
+                return {
+                    "count": len(pat_appointments_history),
+                    "patient_public_id": patient.public_id,
+                    "patient_full_name": patient.full_name,
+                    "patient_history": pat_appointments_history
+                }, 200
+            
+        except Exception as e:
+            app.logger.exception(f"(Resource) PatientSearchAppointmentHistory: (triggered) an error: {e}")
+            abort(500, message="Patient Appointment History search data fetching failed.")

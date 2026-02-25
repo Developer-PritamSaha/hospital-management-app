@@ -299,17 +299,30 @@ class AdminManageDoctor(Resource):
 
         doctor = User.query.filter_by(id=int(args["doctor_user_id"])).first()
         if not doctor:
-             abort(404, message="Doctor donot exist.")
+            abort(404, message="Doctor user donot exist.")
+
+        doc = Doctor.query.filter_by(user_id=int(args["doctor_user_id"])).first()
+        if not doc:
+            abort(404, message="Doctor donot exist.")
+        else:
+            doc_id = doc.id
 
         try:
             if doctor.is_active != args["is_active"]:
                 if not args["is_active"]:
                     doctor.is_active = False
                     db.session.flush()
+
                     # Invalidate all the existing tokens
                     tokens = User_Tokens.query.filter_by(user_id=int(args["doctor_user_id"])).all()
                     for t in tokens:
                         t.valid = False
+                        db.session.flush()
+
+                    # Cancel all existing booked appointments
+                    appointments = Appointment.query.filter_by(doctor_id=doc_id, status="booked").all()
+                    for ap in appointments:
+                        ap.status = "canceled"
                         db.session.flush()
                 else:
                     doctor.is_active = True

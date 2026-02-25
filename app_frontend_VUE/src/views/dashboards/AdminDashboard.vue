@@ -209,7 +209,7 @@
 
     <main class="main-container">
         <div ref="alertPlaceholder"></div>
-        <header class=" ps-1 p-3 d-flex align-items-center justify-content-between bg-white shadow-sm">
+        <header class="sticky-top ps-1 p-3 d-flex align-items-center justify-content-between bg-white shadow-sm">
             <div class="d-flex align-items-center flex-grow-1">
                 <button class="btn me-3 border-0" @click="toggleSidebar">
                     <i class="bi bi-chevron-bar-left fs-5 left-toggle text-secondary" :class="{ 'show': !isSidebarOpen }" title="Close Sidebar"></i>

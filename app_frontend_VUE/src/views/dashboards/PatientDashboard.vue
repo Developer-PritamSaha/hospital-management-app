@@ -6,7 +6,7 @@
     import { useGlobalTemp } from '@/stores/temp_data';
 
     const globalTemp = useGlobalTemp()
-    const currentRoutePath = ref('/dashboard/patient/appointments/upcoming')
+    const currentRoutePath = ref('/dashboard/patient/appointments')
     const searchPlaceholder = ref("Search appointments...")
     const routeChangeCounter = ref(0)
     const searchString = ref('')
@@ -32,18 +32,21 @@
     watch(() => route.path, () => {
         // Change Search resource path
         currentRoutePath.value = route.path
-        // if(currentRoutePath.value === '/dashboard/patient/patients'){
-        //     searchPlaceholder.value = "Search patients..."
-        // }
-        // else if(currentRoutePath.value === '/dashboard/patient/patients'){
-        //     searchPlaceholder.value = "Search patients..."
-        // }
-        // else if(currentRoutePath.value === '/dashboard/patient/appointments/upcomming' || currentRoutePath.value === '/dashboard/patient/appointments/completed'){
-        //     searchPlaceholder.value = "Search appointments..."
-        // }
-        // else{
+        if(currentRoutePath.value === '/dashboard/patient/appointments'){
+            searchPlaceholder.value = "Search appointments..."
+        }
+        else if(currentRoutePath.value === '/dashboard/patient/department-list'){
+            searchPlaceholder.value = "Search departments..."
+        }
+        else if(currentRoutePath.value === '/dashboard/patient/doctor-list'){
+            searchPlaceholder.value = "Search doctors..."
+        }
+        else if(currentRoutePath.value === '/dashboard/patient/history'){
+            searchPlaceholder.value = "Search history..."
+        }
+        else{
             searchPlaceholder.value = "Search Unavilable..."
-        // }
+        }
 
 
         // If we are on a mobile/tablet screen, close the sidebar on navigation
@@ -152,23 +155,33 @@
     async function searchQuery(){
         if (searchString.value.trim() === '') return
 
-        // if(currentRoutePath.value === '/dashboard/patient/patients'){
-        //     // appendAlert(`Searching for patient '${searchString.value.trim()}' Successful. In ${currentRoutePath.value}`, "success", "bi-check-circle-fill")
-        //     globalTemp.set('searchResource', 'patient')
-        //     globalTemp.set('searchQuery', searchString.value.trim())
-        //     routeChangeCounter.value++
-        //     router.push('/dashboard/patient/patients')
-        // }
-        // else if(currentRoutePath.value === '/dashboard/patient/patients'){
-        //     // appendAlert(`Searching for patient '${searchString.value.trim()}' Successful. In ${currentRoutePath.value}`, "success", "bi-check-circle-fill")
-        //     globalTemp.set('searchResource', 'patient')
-        //     globalTemp.set('searchQuery', searchString.value.trim())
-        //     routeChangeCounter.value++
-        //     router.push('/dashboard/patient/patients')
-        // }
-        // else{
+        if(currentRoutePath.value === '/dashboard/patient/appointments'){
+            globalTemp.set('searchResource', 'upcoming-appointments')
+            globalTemp.set('searchQuery', searchString.value.trim())
+            routeChangeCounter.value++
+            router.push('/dashboard/patient/appointments')
+        }
+        else if(currentRoutePath.value === '/dashboard/patient/department-list'){
+            globalTemp.set('searchResource', 'departments')
+            globalTemp.set('searchQuery', searchString.value.trim())
+            routeChangeCounter.value++
+            router.push('/dashboard/patient/department-list')
+        }
+        else if(currentRoutePath.value === '/dashboard/patient/doctor-list'){
+            globalTemp.set('searchResource', 'doctors')
+            globalTemp.set('searchQuery', searchString.value.trim())
+            routeChangeCounter.value++
+            router.push('/dashboard/patient/doctor-list')
+        }
+        else if(currentRoutePath.value === '/dashboard/patient/history'){
+            globalTemp.set('searchResource', 'history')
+            globalTemp.set('searchQuery', searchString.value.trim())
+            routeChangeCounter.value++
+            router.push('/dashboard/patient/history')
+        }
+        else{
             appendAlert("Searching Not Available.", "danger", "bi-exclamation-triangle-fill")
-        // }
+        }
     }
 
     function clearSearchString(){
@@ -194,12 +207,16 @@
 
         <nav class="nav flex-column flex-grow-1 overflow-hidden">
             <small class="px-4 text-uppercase text-muted fw-bold mb-2 sidebar-text" style="font-size: 0.7rem;">Navigation</small>
+
             <router-link to="/dashboard/patient/appointments" class="nav-link" title="Appointments"><i class="bi bi-calendar2-check me-3"></i><span class="sidebar-text">Appointments</span></router-link>
-            <router-link to="/dashboard/patient/doctor-list" class="nav-link" title="Available Doctors"><i class="bi bi-card-checklist me-3"></i><span class="sidebar-text">Available Doctors</span></router-link>
-            <!-- <router-link to="/dashboard/patient/availability" class="nav-link" title="Manage Availability"><i class="bi bi-calendar2-week me-3"></i><span class="sidebar-text">Manage Availability</span></router-link> -->
+
+            <router-link to="/dashboard/patient/department-list" class="nav-link" :class="{ 'router-link-active': ['/doctor-list', '/book-appointment'].some(path => $route.path.includes(path)) }" title="Available Doctors"><i class="bi bi-postcard-heart me-3"></i><span class="sidebar-text">Departments</span></router-link>
+            
+            <router-link to="/dashboard/patient/history" class="nav-link" title="History"><i class="bi bi-clock-history me-3"></i><span class="sidebar-text">History</span></router-link>
+
+            <router-link to="/dashboard/patient/profile" class="nav-link" title="Profile"><i class="bi bi-person-square me-3"></i><span class="sidebar-text">Profile</span></router-link>
 
             <div class="mt-5 px-4 border-top pt-4">
-                <router-link to="/dashboard/patient/profile" class="nav-link px-0" style="color: blueviolet;" title="Profile"><i class="bi bi-person-circle me-3"></i><span class="sidebar-text">Profile</span></router-link>
                 <a class="nav-link px-0 text-danger" @click="logout" title="Logout"><i class="bi bi-power me-3"></i><span class="sidebar-text">Logout</span></a>
             </div>
         </nav>
@@ -207,7 +224,7 @@
 
     <main class="main-container">
         <div ref="alertPlaceholder"></div>
-        <header class=" ps-1 p-3 d-flex align-items-center justify-content-between bg-white shadow-sm">
+        <header class="sticky-top ps-1 p-3 d-flex align-items-center justify-content-between bg-white shadow-sm">
             <div class="d-flex align-items-center flex-grow-1">
                 <button class="btn me-3 border-0" @click="toggleSidebar">
                     <i class="bi bi-chevron-bar-left fs-5 left-toggle text-secondary" :class="{ 'show': !isSidebarOpen }" title="Close Sidebar"></i>
@@ -228,12 +245,14 @@
                     <i class="bi bi-bell fs-5"></i>
                     <!-- <span class="position-absolute top-25 start-75 translate-middle p-1 bg-danger border border-light rounded-circle"></span> -->
                 </button>
-                <div class="d-flex align-items-center border-start ps-3">
-                    <div class="text-end me-2 d-none d-md-block">
-                        <div class="fw-bold small">{{ pat_name }}</div>
+                <router-link to="/dashboard/patient/profile" class="profile-link">
+                    <div class="d-flex align-items-center border-start ps-3">
+                        <div class="text-end me-2 d-none d-md-block">
+                            <div class="fw-bold small">{{ pat_name }}</div>
+                        </div>
+                        <img src="@/assets/favicon/icons8-patient.png" class="rounded-circle" width="40" height="40" alt="Avatar">
                     </div>
-                    <img src="@/assets/favicon/icons8-patient.png" class="rounded-circle" width="40" height="40" alt="Avatar">
-                </div>
+                </router-link>
             </div>
         </header>
         
@@ -338,6 +357,12 @@
     .router-link-active {
         background-color: #eee6fc !important;
         color: var(--primary-purple) !important;
+    }
+
+    .profile-link{
+        background-color: white !important;
+        color: rgb(69, 13, 143) !important;
+        text-decoration: none;
     }
    
     .search-bar {

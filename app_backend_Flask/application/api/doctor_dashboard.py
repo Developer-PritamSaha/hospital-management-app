@@ -68,6 +68,7 @@ class DoctorDashboard(Resource):
                 'role': "doctor",
                 'department': Departments_Doctors.dept_name(doctor.id),
                 'specialization': Specialization.spec_name(doctor.specialization_id),
+                'qualification': doctor.qualification,
                 'gender': doctor.gender.title(),
                 'license': doctor.license,
                 'experience': doctor.experience,
@@ -336,11 +337,8 @@ class DoctorManageAppointments(Resource):
             appointments_data = []
             for ap in appointments:
                 patient = Patient.query.filter_by(id=ap.patient_id).first()
-                if not patient:
-                    return{
-                        'message': "Patient not exist."
-                    }, 404
-                else:
+
+                if patient:
                     pat_age = current_datetime.year - patient.dob.year
 
                     appointments_data.append(
@@ -395,9 +393,9 @@ class DoctorManageAppointments(Resource):
         appoint = Appointment.query.filter_by(public_id=args["appointment_public_id"]).first()
         if appoint:
             if appoint.status == "canceled":
-                abort(400, message="Appointment already canceled.")
+                abort(409, message="Appointment already canceled.")
             elif appoint.status == "completed":
-                abort(400, message="Appointment already completed.")
+                abort(409, message="Appointment already completed.")
             
             is_treatment_updated = Treatment.query.filter_by(appointment_id=appoint.id).first() is not None
             if (not is_treatment_updated) and (args["status"] != "canceled"):
@@ -537,6 +535,7 @@ class DoctorPatientTreatmentHistory(Resource):
                     }
                 )
 
+            pat_appointments_history.reverse()
             return {
                 "count": len(pat_appointments_history),
                 "patient_public_id": patient.public_id,
