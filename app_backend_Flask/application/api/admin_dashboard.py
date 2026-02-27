@@ -11,7 +11,12 @@ from ..extensions import db
 from app_backend_Flask.application.models import *
 from ..utils.input_validators import *
 
-## Request Parser setup 
+### Request Parser setup 
+## For Apponitment Data
+adminAppointmentsData_validator = reqparse.RequestParser()
+adminAppointmentsData_validator.add_argument("appointment_public_id", type=non_empty_string, required=True, help="{error_msg}")
+adminAppointmentsData_validator.add_argument("status", type=non_empty_string, required=True, help="{error_msg}")
+
 ## For Doctor Data
 doctorBlockData_validator = reqparse.RequestParser()
 doctorBlockData_validator.add_argument("doctor_user_id", type=is_integer, required=True, help="{error_msg}")
@@ -69,6 +74,145 @@ class AdminDashboard(Resource):
             app.logger.exception(f"(Resource) AdminDashboard: (triggered) an error: {e}")
             abort(500, message="Admin data fetching failed.")
 
+class AdminAppointments(Resource):
+    '''This resource consist of 'GET' & 'PATCH' method which checks 'access token' sent by the client and handles the appointments as per the request'''
+
+    @jwt_required()   
+    def get(self):
+        user_id = get_jwt_identity()
+        if Roles_Users.user_role(int(user_id)) != "admin":
+            abort(401, message="Admin Access needed.")
+
+        duration = request.args.get("duration")
+        try:
+            duration = non_empty_string(duration, "'duration' parameter")
+            if duration not in ['previous', 'current-week', 'all']:
+                raise ValueError("'duration' parameter can only have value 'all' or 'current-week' or 'previous'.")
+        except ValueError as e:
+            abort(400, message=e)
+
+
+        appointments = []
+
+        if duration in ["current-week", "previous"]:
+            
+            current_datetime = datetime.now()
+            weekday_index = int(current_datetime.strftime("%u")) - 1
+            current_week_start_date = current_datetime.date() - timedelta(days=weekday_index)
+
+            # Current weeks all appointments list
+            if duration == "current-week":
+                for i in range(0,7):
+                    ap_date = current_week_start_date + timedelta(days=i)
+                    ap = Appointment.query.filter_by(date=ap_date).all()
+                    appointments += ap
+            # All appointments list before the current week
+            else:
+                appointments = Appointment.query.filter(Appointment.date < current_week_start_date).all()
+            
+        else:
+            # Past all appointments
+            appointments = Appointment.query.all()
+        
+        try:
+            appointments_data = []
+            booked_appointments_data = []
+            for ap in appointments:
+                patient = Patient.query.filter_by(id=ap.patient_id).first()
+                doctor = Doctor.query.filter_by(id=ap.doctor_id).first()
+                if doctor and patient:
+                    if ap.status == "booked" and duration == "current-week":
+                        booked_appointments_data.append(
+                            {
+                                'appointment_public_id': ap.public_id,
+                                'patient_public_id': patient.public_id,
+                                'patient_full_name': patient.full_name,
+                                'doctor_full_name': doctor.full_name,
+                                'doctor_public_id': doctor.public_id,
+                                'doctor_department': Departments_Doctors.dept_name(doctor.id),
+                                'date': ap.date.strftime("%Y-%m-%d"),
+                                'start_time': ap.start_time.strftime("%H:%M"),
+                                'end_time': ap.end_time.strftime("%H:%M"),
+                                'status': ap.status,
+                            }
+                        )
+
+                    else:
+                        appointments_data.append(
+                            {
+                                'appointment_public_id': ap.public_id,
+                                'patient_public_id': patient.public_id,
+                                'patient_full_name': patient.full_name,
+                                'doctor_full_name': doctor.full_name,
+                                'doctor_public_id': doctor.public_id,
+                                'doctor_department': Departments_Doctors.dept_name(doctor.id),
+                                'date': ap.date.strftime("%Y-%m-%d"),
+                                'start_time': ap.start_time.strftime("%H:%M"),
+                                'end_time': ap.end_time.strftime("%H:%M"),
+                                'status': ap.status,
+                            }
+                        )
+                    
+            appointments_data = booked_appointments_data + appointments_data
+
+            if duration == "current-week":
+                return {
+                    "count": len(appointments_data),
+                    "week_start_date": current_week_start_date.strftime("%Y-%m-%d"),
+                    "week_end_date": (current_week_start_date + timedelta(days=6)).strftime("%Y-%m-%d"),
+                    "appointments": appointments_data
+                }, 200
+            else:
+                appointments_data.reverse()
+                return {
+                    "count": len(appointments_data),
+                    "appointments": appointments_data
+                }, 200
+            
+        except Exception as e:
+            app.logger.exception(f"(Resource) AdminAppointments: 'GET' (triggered) an error: {e}")
+            abort(500, message="Patient and doctor upcoming appointments fetching failed.")
+
+    @jwt_required()
+    def patch(self):    
+        if not request.is_json:
+            abort(400, message="Only JSON data allowed")
+        
+        user_id = get_jwt_identity()
+        
+        if Roles_Users.user_role(int(user_id)) != "admin":
+            abort(401, message="Admin Access needed.")
+        
+        args = adminAppointmentsData_validator.parse_args()
+
+        if args["status"].lower() != "canceled":
+            abort(400, message={
+                "status": "Value can only be 'canceled'."
+            })
+
+        appoint = Appointment.query.filter_by(public_id=args["appointment_public_id"]).first()
+        if appoint:
+            if appoint.status == "canceled":
+                abort(409, message="Appointment already canceled.")
+            elif appoint.status == "completed":
+                abort(409, message="Appointment already completed.")
+        else:
+            abort(404, message="Appointment not exist.")
+        
+        try:
+            appoint.status = args["status"].lower()
+            db.session.flush()
+            
+        except Exception as e:
+            db.session.rollback()
+            app.logger.exception(f"(Resource) AdminAppointments: 'PATCH' (triggered) an error: {e}")
+            abort(500, message="Appointment status patching failed.")
+        else:
+            db.session.commit()
+            return {
+                "message": "Appointment status updated successfully."
+            }, 200
+
 class AdminPatientsData(Resource):
     '''This resource consist of 'GET' method which checks 'access token' sent by the client and response with the list of all current patient data'''
     @jwt_required()   
@@ -99,7 +243,7 @@ class AdminPatientsData(Resource):
                     }
                 )
 
-                patient_data.reverse()
+            patient_data.reverse()
 
             return {
                 "count": len(patient_data),
@@ -109,6 +253,114 @@ class AdminPatientsData(Resource):
         except Exception as e:
             app.logger.exception(f"(Resource) AdminPatientsData: (triggered) an error: {e}")
             abort(500, message="Patients data fetching failed.")
+
+class AdminPatientAppointmentHistory(Resource):
+    '''This resource consist of 'GET' method which checks 'access token' sent by the client and sends back the patient appointment history'''
+
+    @jwt_required()   
+    def get(self):
+        
+        user_id = get_jwt_identity()
+        
+        if Roles_Users.user_role(int(user_id)) != "admin":
+            abort(401, message="Admin Access needed.")
+
+        pat_public_id = request.args.get("patient_public_id")
+        try:
+            patient_public_id = non_empty_string(pat_public_id)
+        except ValueError:
+            abort(400, message="'patient_public_id' parameter should be an string and not empty.")
+
+        patient = Patient.query.filter_by(public_id=patient_public_id).first()
+        if not patient:
+             abort(404, message="Patient not found.")
+
+        appointments = Appointment.query.filter_by(patient_id=patient.id, status="completed").all()
+        
+        try:
+            pat_appointments_history = []
+
+            for ap in appointments:
+                ap_doc = Doctor.query.filter_by(id=ap.doctor_id).first()
+                if not ap_doc:
+                    doc_name = "Unknown"
+                    doc_pub_id = "NA"
+                    doc_dept = "NA"
+                else:
+                    doc_name = ap_doc.full_name
+                    doc_pub_id = ap_doc.public_id
+                    doc_dept = Departments_Doctors.dept_name(ap_doc.id)
+
+                pat_appointments_history.append(
+                    {
+                        'appointment_public_id': ap.public_id,
+                        'doctor_full_name': doc_name,
+                        'doctor_public_id': doc_pub_id,
+                        'doctor_department': doc_dept,
+                        'date': ap.date.strftime("%Y-%m-%d"),
+                        'start_time': ap.start_time.strftime("%H:%M"),
+                        'end_time': ap.end_time.strftime("%H:%M"),
+                    }
+                )
+
+            pat_appointments_history.reverse()
+            return {
+                "count": len(pat_appointments_history),
+                "patient_public_id": patient.public_id,
+                "patient_full_name": patient.full_name,
+                "patient_history": pat_appointments_history
+            }, 200
+            
+        except Exception as e:
+            app.logger.exception(f"(Resource) AdminPatientAppointmentHistory: 'GET' (triggered) an error: {e}")
+            abort(500, message="Patient past appointment history data fetching failed.")
+
+class AdminPatientTreatmentData(Resource):
+    '''This resource consist of 'GET' method which checks 'access token' sent by the client and sends back the appointment treatment data if exist'''
+
+    @jwt_required()   
+    def get(self):
+        
+        user_id = get_jwt_identity()
+        
+        if Roles_Users.user_role(int(user_id)) != "admin":
+            abort(401, message="Admin Access needed.")
+
+        ap_public_id = request.args.get("appointment_public_id")
+        try:
+            ap_public_id = non_empty_string(ap_public_id)
+        except ValueError:
+            abort(400, message="'appointment_public_id' parameter should be an string and not empty.")
+
+        appointment = Appointment.query.filter_by(public_id=ap_public_id).first()
+        if not appointment:
+             abort(404, message="Appointment not found.")
+
+        try:
+            ap_treatment_data = Treatment.query.filter_by(appointment_id=appointment.id).first()
+
+            if ap_treatment_data == None:
+                return {
+                    'appointment_public_id': ap_public_id,
+                    "status": "unavailable"
+                }, 200
+            
+            else:
+                return {
+                    'appointment_public_id': ap_public_id,
+                    'visit_type': ap_treatment_data.visit_type,
+                    'test_done': ap_treatment_data.test_done,
+                    'diagnosis': ap_treatment_data.diagnosis,
+                    'prescription': ap_treatment_data.prescription,
+                    'medicine': ap_treatment_data.medicine,
+                    'notes': ap_treatment_data.notes,
+                    "status": "available"
+                }, 200
+                
+        except Exception as e:
+            app.logger.exception(f"(Resource) AdminPatientTreatmentData: 'GET' (triggered) an error: {e}")
+            abort(500, message="Patient Appointment Treatment data fetching failed.")
+
 
 class AdminDoctorsData(Resource):
     '''This resource consist of 'GET' method which checks 'access token' sent by the client and response with the list of all current doctor data'''
@@ -143,7 +395,7 @@ class AdminDoctorsData(Resource):
                     }
                 )
 
-                doctor_data.reverse()
+            doctor_data.reverse()
 
             return {
                 "count": len(doctor_data),

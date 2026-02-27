@@ -195,13 +195,13 @@ const refreshDoctors = () => {
                     <table class="table-style">
                         <thead>
                             <tr>
-                                <th>Id</th>
-                                <th>Doctor Info</th>
-                                <th>Contact number</th>
-                                <th>License</th>
-                                <th>Specialization</th>
-                                <th>Experience</th>
-                                <th>Block/Unblock</th>
+                                <th class="text-center">Id</th>
+                                <th class="text-center">Doctor Info</th>
+                                <th class="text-center">Contact number</th>
+                                <th class="text-center">License</th>
+                                <th class="text-center">Specialization</th>
+                                <th class="text-center">Experience</th>
+                                <th class="text-center">Block/Unblock</th>
                                 <th class="text-center">Actions</th>
                             </tr>
                         </thead>
@@ -224,27 +224,27 @@ const refreshDoctors = () => {
                             </tr>
 
                             <tr v-else v-for="(doctor) in data.doctors" :key="doctor.doctor_id">
-                                <td class="text-muted fw-bold">{{ doctor.doctor_public_id }}</td>
+                                <td><div class="text-center highlight-text fw-bold">{{ doctor.doctor_public_id }}</div></td>
                                 <td>
                                     <div class="d-flex flex-column">
-                                        <span class="fw-bold" style="cursor: pointer;color: #6b27d9;" data-bs-toggle="modal" data-bs-target="#infoDocModal" @click="selectDoc(doctor)">
+                                        <div class="text-center fw-bold" style="cursor: pointer;color: #6b27d9;" data-bs-toggle="modal" data-bs-target="#infoDocModal" @click="selectDoc(doctor)">
                                             {{ doctor.full_name }}
-                                        </span>
-                                        <small class="text-muted fw-semibold">{{ doctor.email }}</small>
+                                        </div>
+                                        <small class="text-center text-muted fw-semibold">{{ doctor.email }}</small>
                                     </div>
                                 </td>
-                                <td><span class="text-primary fw-semibold">+91 {{ doctor.contact }}</span></td>
-                                <td><span class="text-success fw-medium">{{ doctor.license }}</span></td>
-                                <td><span class="spec-tag">{{ doctor.specialization }}</span></td>
-                                <td><span class="fw-medium">{{ doctor.experience }} yrs</span></td>
-                                <td>
+                                <td><div class="text-center text-primary fw-semibold">+91 {{ doctor.contact }}</div></td>
+                                <td><div class="text-center text-success fw-medium">{{ doctor.license }}</div></td>
+                                <td><div class="text-center spec-tag">{{ doctor.specialization }}</div></td>
+                                <td><div class="text-center text-primary fw-semibold">{{ doctor.experience }} yrs</div></td>
+                                <td class="text-center">
                                   <button @click="blockDoctor(doctor)" class="border-0 btn" title="Block/Unblock">
-                                    <span class="status-pill" :class="doctor.is_active ? 'active' : 'inactive'">
+                                    <div class="status-pill" :class="doctor.is_active ? 'active' : 'inactive'">
                                         {{ doctor.is_active ? "Active" : "Inactive" }}
-                                    </span>
+                                    </div>
                                   </button>
                                 </td>
-                                <td>
+                                <td class="text-center">
                                     <div class="action-buttons">
                                         <router-link to="/dashboard/admin/edit-doctor"><button @click="editDoctor(doctor)" class="btn-action edit" title="Edit">
                                             <i class="bi bi-pencil-square"></i>

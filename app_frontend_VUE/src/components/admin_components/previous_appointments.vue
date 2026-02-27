@@ -10,8 +10,6 @@ const triggerAlert = inject('triggerChildAlert')
 const data = ref({
     appointments: [],
     appointCount: 0,
-    week_start_date: '0000-00-00',
-    week_end_date: '0000-00-00',
     isLoading: false,
     error: null,
 })
@@ -23,17 +21,15 @@ async function loadAppointments() {
         const response = await axios_instance.get("/api/dashboard/admin/appointments",
         {  
             params: {
-                "duration": "current-week"
+                "duration": "previous"
             }
         })
         data.value.appointCount = response.data?.count
-        data.value.week_start_date = response.data?.week_start_date
-        data.value.week_end_date = response.data?.week_end_date
         data.value.appointments = response.data?.appointments
     } catch (err) {
         data.value.error = err.response?.data?.message || err.message
         data.value.appointCount = 0
-        triggerAlert("Upcoming Appointments Loading failed.", "danger", "bi-exclamation-triangle")
+        triggerAlert("Previous Appointments Loading failed.", "danger", "bi-exclamation-triangle")
     } finally {
         data.value.isLoading = false
     }
@@ -46,13 +42,11 @@ async function loadFilteredAppointments() {
         const response = await axios_instance.get("/api/dashboard/admin/appointments/search",
         {  
             params: {
-                "duration": "current-week",
+                "duration": "previous",
                 "query": globalTemp.get("searchQuery")
             }
         })
         data.value.appointCount = response.data?.count
-        data.value.week_start_date = response.data?.week_start_date
-        data.value.week_end_date = response.data?.week_end_date
         data.value.appointments = response.data?.appointments
         globalTemp.reset("searchQuery")
     } catch (err) {
@@ -63,7 +57,7 @@ async function loadFilteredAppointments() {
             triggerAlert("Searched appointment(s) not found.", "info", "bi-info-circle")
         }
         else{
-            triggerAlert("Searched Upcoming Appointments Loading failed.", "danger", "bi-exclamation-triangle")
+            triggerAlert("Searched Previous Appointments Loading failed.", "danger", "bi-exclamation-triangle")
         }
     } finally {
         data.value.isLoading = false
@@ -73,13 +67,13 @@ async function loadFilteredAppointments() {
 // Handle View Patient Medical History 
 function viewPatientMedicalHistory(pat_public_id){
     globalTemp.set("patient_public_id", pat_public_id)
-    globalTemp.set("from", "upcoming-AP")
+    globalTemp.set("from", "previous-AP")
     router.replace("/dashboard/admin/patient-records")
 }
 
 onMounted(() => {
     
-    if(globalTemp.get('searchResource') === 'upcoming-appointments'){
+    if(globalTemp.get('searchResource') === 'previous-appointments'){
         globalTemp.reset('searchResource')
         loadFilteredAppointments()
     }
@@ -99,7 +93,7 @@ const refreshAppointments = () => {
     <div class="row g-2">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <div class="d-flex align-items-center">
-                <h2 class="h4 fw-bold" style="color: #220349;">Upcoming Appointments</h2> 
+                <h2 class="h4 fw-bold" style="color: #220349;">Previous Appointments</h2> 
                 
                 <button class="btn btn-sm border-0 text-primary" 
                 @click="refreshAppointments" v-if="!data.isLoading" title="Refresh">
@@ -109,8 +103,8 @@ const refreshAppointments = () => {
                     <i class="bi bi-arrow-repeat fs-6"></i>
                 </button>
             </div>
-            <span class="badge week-badge-bg px-3 py-2 text-info">From {{ data.week_start_date }} to {{ data.week_end_date }}</span>
-            <!-- <span class="badge count-bg px-3 py-2 text-white">Count: {{ data.appointCount }}</span> -->
+
+            <span class="badge count-bg px-3 py-2 text-white">Count: {{ data.appointCount }}</span>
         </div>
         
         <div class="table-container shadow-sm border-1">
@@ -192,7 +186,7 @@ const refreshAppointments = () => {
                             </td>
                             
                             <td class="text-center">
-                                <button @click="viewPatientMedicalHistory(appoint.patient_public_id)" type="button" class="view-treatment-btn px-4 rounded-pill btn" 
+                                <button @click="viewPatientMedicalHistory(appoint.patient_public_id,appoint.doctor_full_name)" type="button" class="view-treatment-btn px-4 rounded-pill btn" 
                                 title="View Records">
                                     <div>
                                         <i class="bi bi-clipboard-data pe-1"></i>
@@ -262,7 +256,7 @@ const refreshAppointments = () => {
     cursor: pointer;
 }
 .view-treatment-btn:hover{
-    background: linear-gradient(135deg,#ab8fe7f8, #9170d3, #7f63b1);
+    background: linear-gradient(135deg,#ab8fe7, #9170d3, #7f63b1);
     color:white;
 }
 

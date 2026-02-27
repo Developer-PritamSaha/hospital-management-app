@@ -104,6 +104,17 @@ provide('triggerChildAlert', appendAlert)
                 </div>
             </div>
 
+            <div class="col-12 d-flex justify-content-center mb-2">
+                <div class="nav-slider-container">
+                    <router-link to="/dashboard/doctor/appointments/upcoming" class="nav-slider-item">
+                        Upcoming
+                    </router-link>
+                    <router-link to="/dashboard/doctor/appointments/history" class="nav-slider-item">
+                        History
+                    </router-link>
+                </div>
+            </div>
+
             <div class="col-12">
                 <router-view></router-view>
             </div>

@@ -160,7 +160,7 @@ const refreshPatients = () => {
                                         <small class="text-center text-muted fw-bold">{{ patient.patient_public_id }}</small>
                                     </div>
                                 </td>
-                                <td class="text-center text-muted fw-bold">{{ patient.appointment_public_id }}</td>
+                                <td><div class="text-center highlight-text fw-bold">{{ patient.appointment_public_id }}</div></td>
                                 <td><div class="text-center date-tag fw-medium">{{ patient.date }}</div></td>
                                 <td><div class="text-center text-success fw-medium">{{ patient.patient_gender }}</div></td>
                                 <td><div class="text-center text-danger fw-medium">{{ patient.patient_age }} yrs</div></td>
@@ -223,6 +223,11 @@ const refreshPatients = () => {
 
 .table-style tbody tr:hover {
     background-color: #f9ffff;
+}
+
+.highlight-text{
+    color: #341079;
+    font-weight: 700;
 }
 
 .records-pill {

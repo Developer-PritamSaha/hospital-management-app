@@ -20,7 +20,7 @@ async function loadPatientHistory() {
     data.value.error = null
     try {
         pat_pub_id.value = globalTemp.get("patient_public_id")
-        const response = await axios_instance.get("/api/dashboard/doctor/patient-history",{
+        const response = await axios_instance.get("/api/dashboard/admin/patient-appointments",{
             params: {
                 "patient_public_id": pat_pub_id?.value
             }
@@ -61,7 +61,6 @@ function appendAlert(message, type, icon) {
   }, 5000)
 }
 
-
 // Load Appointment treatment data
 const treatmentData = ref(null)
 const ap_doc_name = ref("NA")
@@ -72,7 +71,7 @@ async function loadTreatmentData(ap_pub_id, doc_name) {
     treatmentDataLoading.value = true
     treatmentDataError.value = null
     try {
-        const response = await axios_instance.get("/api/dashboard/doctor/treatment-data",{
+        const response = await axios_instance.get("/api/dashboard/admin/patient-treatment",{
             params: {
                 "appointment_public_id": ap_pub_id
             }
@@ -111,9 +110,21 @@ const refreshData = () => {
             <div class="d-flex justify-content-between align-items-center mb-1">
                <div class="d-flex align-items-center">
 
-                    <router-link to="/dashboard/doctor/assigned-patients">
+                    <router-link v-if="globalTemp.get('from') == 'upcoming-AP'" to="/dashboard/admin/appointments/upcoming">
                         <button type="button" class="btn btn-sm border-0 text-secondary" title="Back">
-                            <i class="bi bi-arrow-left-square fs-4 pe-1"></i>
+                            <i class="bi bi-arrow-left-square fs-4 pe-2"></i>
+                        </button>
+                    </router-link>
+
+                    <router-link v-else-if="globalTemp.get('from') == 'previous-AP'" to="/dashboard/admin/appointments/previous">
+                        <button type="button" class="btn btn-sm border-0 text-secondary" title="Back">
+                            <i class="bi bi-arrow-left-square fs-4 pe-2"></i>
+                        </button>
+                    </router-link>
+
+                    <router-link v-else-if="globalTemp.get('from') == 'patients'" to="/dashboard/admin/patients">
+                        <button type="button" class="btn btn-sm border-0 text-secondary" title="Back">
+                            <i class="bi bi-arrow-left-square fs-4 pe-2"></i>
                         </button>
                     </router-link>
 

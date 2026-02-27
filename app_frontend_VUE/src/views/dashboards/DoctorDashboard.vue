@@ -32,15 +32,12 @@
     watch(() => route.path, () => {
         // Change Search resource path
         currentRoutePath.value = route.path
-        if(currentRoutePath.value === '/dashboard/doctor/appointments/upcoming'){
+        if(currentRoutePath.value === '/dashboard/doctor/appointments/upcoming' || currentRoutePath.value === '/dashboard/doctor/appointments/history'){
             searchPlaceholder.value = "Search appointments..."
         }
         else if(currentRoutePath.value === '/dashboard/doctor/assigned-patients'){
             searchPlaceholder.value = "Search patients..."
         }
-        // else if(currentRoutePath.value === '/dashboard/admin/appointments/upcomming' || currentRoutePath.value === '/dashboard/admin/appointments/completed'){
-        //     searchPlaceholder.value = "Search appointments..."
-        // }
         else{
             searchPlaceholder.value = "Search Unavilable..."
         }
@@ -153,11 +150,16 @@
         if (searchString.value.trim() === '') return
 
         if(currentRoutePath.value === '/dashboard/doctor/appointments/upcoming'){
-            // appendAlert(`Searching for patient '${searchString.value.trim()}' Successful. In ${currentRoutePath.value}`, "success", "bi-check-circle-fill")
             globalTemp.set('searchResource', 'upcoming-appointments')
             globalTemp.set('searchQuery', searchString.value.trim())
             routeChangeCounter.value++
             router.push('/dashboard/doctor/appointments/upcoming')
+        }
+        else if(currentRoutePath.value === '/dashboard/doctor/appointments/history'){
+            globalTemp.set('searchResource', 'appointment-history')
+            globalTemp.set('searchQuery', searchString.value.trim())
+            routeChangeCounter.value++
+            router.push('/dashboard/doctor/appointments/history')
         }
         else if(currentRoutePath.value === '/dashboard/doctor/assigned-patients'){
             // appendAlert(`Searching for doctor '${searchString.value.trim()}' Successful. In ${currentRoutePath.value}`, "success", "bi-check-circle-fill")

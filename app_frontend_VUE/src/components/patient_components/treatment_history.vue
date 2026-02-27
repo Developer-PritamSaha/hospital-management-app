@@ -33,7 +33,7 @@ async function loadPatientHistory() {
     } catch (err) {
         data.value.error = err.response?.data?.message || err.message
         data.value.apHistCount = 0
-        appendAlert("Medical history loading failed.", "danger", "bi-exclamation-triangle")
+        appendAlert("Appointment Medical history loading failed.", "danger", "bi-exclamation-triangle")
     } finally {
         data.value.isLoading = false
     }
@@ -59,10 +59,10 @@ async function loadFilteredPatientHistory() {
         data.value.apHistCount = 0
         
         if (err.response?.status === 404){
-            appendAlert("Searched medical history(s) not found.", "info", "bi-info-circle")
+            appendAlert("Searched appointment medical history(s) not found.", "info", "bi-info-circle")
         }
         else{
-            appendAlert("Searched medical history(s) loading failed.", "danger", "bi-exclamation-triangle")
+            appendAlert("Searched appointment medical history(s) loading failed.", "danger", "bi-exclamation-triangle")
         }
     } finally {
         data.value.isLoading = false
@@ -139,7 +139,7 @@ async function requestDataExport(pat_pub_id) {
     //     else{
     //         treatmentDataError.value = "Treatment Data Unavailable."
     //     }
-            appendAlert(`${pat_pub_id} Medical History export started.`, "info", "bi-check-circle")
+            appendAlert(`${pat_pub_id} Appointment Medical History export started.`, "info", "bi-check-circle")
     // } catch (err) {
     //     treatmentDataError.value = err.response?.data?.message || err.message
         
@@ -171,7 +171,7 @@ const refreshData = () => {
             <div class="d-flex justify-content-between align-items-center mb-1">
                <div class="d-flex align-items-center">
 
-                   <h2 class="h4 fw-bold" style="color: #220349;">Medical History</h2> 
+                   <h2 class="h4 fw-bold" style="color: #220349;">Appointment Medical History</h2> 
                    
                     <button class="btn btn-sm border-0 text-primary" 
                     @click="refreshData" v-if="!data.isLoading" title="Refresh">
@@ -200,29 +200,30 @@ const refreshData = () => {
                                 <th class="text-center">Department</th>
                                 <th class="text-center">Date (Y-M-D)</th>
                                 <th class="text-center">Time (24 hr.)</th>
+                                <th class="text-center">Status</th>
                                 <th class="text-center">Treatment History</th>
                             </tr>
                         </thead>
 
                         <tbody>
                             <tr v-if="data.isLoading">
-                                <td colspan="6" class="py-5 text-center text-muted">
+                                <td colspan="7" class="py-5 text-center text-muted">
                                     <div class="spinner-border spinner-border-sm me-2"></div> Loading...
                                 </td>
                             </tr>
 
                             <tr v-else-if="data.error">
-                                <td colspan="6" class="py-5 text-center text-danger fw-medium">
+                                <td colspan="7" class="py-5 text-center text-danger fw-medium">
                                     {{ data.error }}
                                 </td>
                             </tr>
 
                             <tr v-else-if="data.apHistCount === 0">
-                                <td colspan="6" class="py-5 text-center text-primary fw-medium">No medical history available.</td>
+                                <td colspan="7" class="py-5 text-center text-primary fw-medium">No medical history available.</td>
                             </tr>
 
                             <tr v-else v-for="(appoint) in data.histories" :key="appoint.appointment_public_id">
-                                <td class="text-center text-muted fw-bold">{{ appoint.appointment_public_id }}</td>
+                                <td><div class="text-center highlight-text fw-bold">{{ appoint.appointment_public_id }}</div></td>
                                 <td>
                                     <div class="d-flex flex-column">
                                         <span class="text-center fw-bold" style="color: #6b27d9;">
@@ -238,16 +239,27 @@ const refreshData = () => {
                                 </div></td>
 
                                 <td class="text-center">
-                                    <div>
-                                        <button 
-                                        @click="loadTreatmentData(appoint.appointment_public_id, appoint.doctor_full_name)" class="border-0 btn" 
-                                        title="View Treatment" data-bs-toggle="modal" data-bs-target="#treatmentDataModal">
-                                            <div class="button-pill history">
-                                                <i class="bi bi-clipboard2-pulse pe-1"></i>
-                                                View
-                                            </div>
-                                        </button>
+                                    <div v-if="appoint.status === 'completed'" class="status-pill completed">
+                                        Completed
                                     </div>
+                                    <div v-else-if="appoint.status === 'canceled'" class="status-pill canceled">
+                                        Canceled
+                                    </div>
+                                    <div v-else class="status-pill booked">
+                                        Booked
+                                    </div>
+                                </td>
+                            
+                                <td class="text-center">
+                                    <button 
+                                    @click="loadTreatmentData(appoint.appointment_public_id, appoint.doctor_full_name)" type="button" class="view-treatment-btn px-4 rounded-pill btn" 
+                                    title="View Treatment" data-bs-toggle="modal" data-bs-target="#treatmentDataModal" 
+                                    :disabled="appoint.status !== 'completed'">
+                                        <div >
+                                            <i class="bi bi-clipboard-data pe-1"></i>
+                                            View
+                                        </div>
+                                    </button>  
                                 </td>
                             </tr>
                         </tbody>
@@ -370,17 +382,32 @@ const refreshData = () => {
     background-color: #f9ffff;
 }
 
-.button-pill {
-    padding: 8px 15px;
+.status-pill {
+    padding: 4px 8px;
     border-radius: 20px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
 }
-.button-pill.history {
-    background-color: #fef6f2;
-    color: #b97a1c;
+
+.status-pill.completed {
+    background-color: #e6fffa;
+    color: #047857;
     border-style: solid;
-    border-color: #ebaf7e;
+    border-color: #15b98b;
+}
+
+.status-pill.booked {
+    background-color: #faf4c1;
+    color: #a3560e;
+    border-style: solid;
+    border-color: #d4ae2f;
+}
+
+.status-pill.canceled {
+    background-color: #ffcdcda9;
+    color: #9c1b1b;
+    border-style: solid;
+    border-color: #f8333388;
 }
 
 .spec-tag {
@@ -390,6 +417,28 @@ const refreshData = () => {
     font-size: 0.8rem;
     font-weight: 500;
     color: #123567;
+}
+
+.view-treatment-btn{
+    align-items: center;
+    background: linear-gradient(135deg,#8f6ec7f6, #724ebbf5, #5c3ca1f5); 
+    color: white;
+    border: 1px solid gray;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.view-treatment-btn:hover{
+    background: linear-gradient(135deg,#ab8fe7, #9170d3, #7f63b1);
+    color:white;
+}
+
+.view-treatment-btn:disabled{
+    background: #ab8be2;
+    color:white;
+    border: 1px solid rgb(90, 89, 89);
+    cursor:not-allowed;
 }
 
 .export-btn{

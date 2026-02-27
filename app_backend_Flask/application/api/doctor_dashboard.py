@@ -322,16 +322,37 @@ class DoctorManageAppointments(Resource):
         if not doctor:
              abort(404, message="Doctor not found.")
 
-        # Current weeks appointments list
+        duration = request.args.get("duration")
+        try:
+            duration = non_empty_string(duration, "'duration' parameter")
+            if duration not in ['history', 'current-week', 'all']:
+                raise ValueError("'duration' parameter can only have value 'all' or 'current-week' or 'history'.")
+        except ValueError as e:
+            abort(400, message=e)
+
+
         appointments = []
 
-        current_datetime = datetime.now()
-        weekday_index = int(current_datetime.strftime("%u")) - 1
-        current_week_start_date = current_datetime.date() - timedelta(days=weekday_index)
-        for i in range(0,7):
-            ap_date = current_week_start_date + timedelta(days=i)
-            ap = Appointment.query.filter_by(doctor_id=doctor.id, date=ap_date, status='booked').all()
-            appointments += ap
+        if duration in ["current-week", "history"]:
+            current_datetime = datetime.now()
+            weekday_index = int(current_datetime.strftime("%u")) - 1
+            current_week_start_date = current_datetime.date() - timedelta(days=weekday_index)
+
+            # Current weeks all appointments list
+            if duration == "current-week":
+                for i in range(0,7):
+                    ap_date = current_week_start_date + timedelta(days=i)
+                    ap = Appointment.query.filter_by(doctor_id=doctor.id, date=ap_date, status='booked').all()
+                    appointments += ap
+            # All the canceled or completed appointments list
+            else:
+                appointments = Appointment.query.filter(
+                    Appointment.doctor_id == doctor.id,
+                    Appointment.status != "booked"
+                ).all()
+        else:
+            # Past all appointments
+            appointments = Appointment.query.filter_by(doctor_id = doctor.id).all()
         
         try:
             appointments_data = []
@@ -357,13 +378,20 @@ class DoctorManageAppointments(Resource):
                             'is_treatment_exist': Treatment.query.filter_by(appointment_id=ap.id).first() is not None
                         }
                     )
-
-            return {
-                "count": len(appointments_data),
-                "week_start_date": current_week_start_date.strftime("%Y-%m-%d"),
-                "week_end_date": (current_week_start_date + timedelta(days=6)).strftime("%Y-%m-%d"),
-                "appointments": appointments_data
-            }, 200
+                    
+            if duration == "current-week":
+                return {
+                    "count": len(appointments_data),
+                    "week_start_date": current_week_start_date.strftime("%Y-%m-%d"),
+                    "week_end_date": (current_week_start_date + timedelta(days=6)).strftime("%Y-%m-%d"),
+                    "appointments": appointments_data
+                }, 200
+            else:
+                appointments_data.reverse()
+                return {
+                    "count": len(appointments_data),
+                    "appointments": appointments_data
+                }, 200
             
         except Exception as e:
             app.logger.exception(f"(Resource) DoctorManageAppointments: 'GET' (triggered) an error: {e}")
@@ -493,10 +521,6 @@ class DoctorPatientTreatmentHistory(Resource):
         if Roles_Users.user_role(int(user_id)) != "doctor":
             abort(401, message="Doctor Access needed.")
 
-        doctor = Doctor.query.filter_by(user_id=int(user_id)).first()
-        if not doctor:
-            abort(404, message="Doctor not found.")
-
         pat_public_id = request.args.get("patient_public_id")
         try:
             patient_public_id = non_empty_string(pat_public_id)
@@ -545,7 +569,7 @@ class DoctorPatientTreatmentHistory(Resource):
             
         except Exception as e:
             app.logger.exception(f"(Resource) DoctorPatientTreatmentHistory: 'GET' (triggered) an error: {e}")
-            abort(500, message="Patient Treatment History data fetching failed.")
+            abort(500, message="Patient past Treatment History data fetching failed.")
 
     @jwt_required()   
     def post(self):
@@ -649,7 +673,7 @@ class DoctorPatientTreatmentHistory(Resource):
                 "message": "Patient treatment history updated successfully."
             }, 200
         
-class PatientAppointmentTreatmentData(Resource):
+class DoctorPatientAppointmentTreatmentData(Resource):
     '''This resource consist of 'GET' method which checks 'access token' sent by the client and sends back the treatment data if exist for a given appointment'''
 
     @jwt_required()   
@@ -696,5 +720,5 @@ class PatientAppointmentTreatmentData(Resource):
                 }, 200
                 
         except Exception as e:
-            app.logger.exception(f"(Resource) PatientAppointmentTreatmentData: 'GET' (triggered) an error: {e}")
+            app.logger.exception(f"(Resource) DoctorPatientAppointmentTreatmentData: 'GET' (triggered) an error: {e}")
             abort(500, message="Patient Appointment Treatment data fetching failed.")

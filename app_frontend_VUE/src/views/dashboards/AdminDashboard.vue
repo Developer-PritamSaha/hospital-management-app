@@ -6,7 +6,7 @@
     import { useGlobalTemp } from '@/stores/temp_data';
 
     const globalTemp = useGlobalTemp()
-    const currentRoutePath = ref('/dashboard/admin/appointments/upcomming')
+    const currentRoutePath = ref('/dashboard/admin/appointments/upcoming')
     const searchPlaceholder = ref("Search appointments...")
     const routeChangeCounter = ref(0)
     const searchString = ref('')
@@ -38,7 +38,7 @@
         else if(currentRoutePath.value === '/dashboard/admin/doctors'){
             searchPlaceholder.value = "Search doctors..."
         }
-        else if(currentRoutePath.value === '/dashboard/admin/appointments/upcomming' || currentRoutePath.value === '/dashboard/admin/appointments/completed'){
+        else if(currentRoutePath.value === '/dashboard/admin/appointments/upcoming' || currentRoutePath.value === '/dashboard/admin/appointments/previous'){
             searchPlaceholder.value = "Search appointments..."
         }
         else{
@@ -150,15 +150,25 @@
     async function searchQuery(){
         if (searchString.value.trim() === '') return
 
-        if(currentRoutePath.value === '/dashboard/admin/patients'){
-            // appendAlert(`Searching for patient '${searchString.value.trim()}' Successful. In ${currentRoutePath.value}`, "success", "bi-check-circle-fill")
+        if(currentRoutePath.value === '/dashboard/admin/appointments/upcoming'){
+            globalTemp.set('searchResource', 'upcoming-appointments')
+            globalTemp.set('searchQuery', searchString.value.trim())
+            routeChangeCounter.value++
+            router.push('/dashboard/admin/appointments/upcoming')
+        }
+        else if(currentRoutePath.value === '/dashboard/admin/appointments/previous'){
+            globalTemp.set('searchResource', 'previous-appointments')
+            globalTemp.set('searchQuery', searchString.value.trim())
+            routeChangeCounter.value++
+            router.push('/dashboard/admin/appointments/previous')
+        }
+        else if(currentRoutePath.value === '/dashboard/admin/patients'){
             globalTemp.set('searchResource', 'patient')
             globalTemp.set('searchQuery', searchString.value.trim())
             routeChangeCounter.value++
             router.push('/dashboard/admin/patients')
         }
         else if(currentRoutePath.value === '/dashboard/admin/doctors'){
-            // appendAlert(`Searching for doctor '${searchString.value.trim()}' Successful. In ${currentRoutePath.value}`, "success", "bi-check-circle-fill")
             globalTemp.set('searchResource', 'doctor')
             globalTemp.set('searchQuery', searchString.value.trim())
             routeChangeCounter.value++
@@ -195,7 +205,7 @@
 
             <router-link to="/dashboard/admin/appointments" class="nav-link" title="Appointments"><i class="bi bi-calendar2-check me-3"></i><span class="sidebar-text">Appointments</span></router-link>
 
-            <router-link to="/dashboard/admin/patients" class="nav-link" :class="{ 'router-link-active': $route.path.includes('/dashboard/admin/edit-patient') }" title="Patients"><i class="bi bi-people me-3"></i><span class="sidebar-text">Patients</span></router-link>
+            <router-link to="/dashboard/admin/patients" class="nav-link" :class="{ 'router-link-active': ['/edit-patient', '/patient-records'].some(path => $route.path.includes(path)) }" title="Patients"><i class="bi bi-people me-3"></i><span class="sidebar-text">Patients</span></router-link>
 
             <router-link to="/dashboard/admin/doctors" class="nav-link" :class="{ 'router-link-active': $route.path.includes('/dashboard/admin/edit-doctor') }" title="Doctors"><i class="bi bi-heart-pulse me-3"></i><span class="sidebar-text">Doctors</span></router-link>
             
@@ -228,7 +238,7 @@
             <div class="d-flex align-items-center">
                 <button class="btn border-0 position-relative me-3">
                     <i class="bi bi-bell fs-5"></i>
-                    <span class="position-absolute top-25 start-75 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                    <!-- <span class="position-absolute top-25 start-75 translate-middle p-1 bg-danger border border-light rounded-circle"></span> -->
                 </button>
                 <div class="d-flex align-items-center border-start ps-3">
                     <div class="text-end me-2 d-none d-md-block">

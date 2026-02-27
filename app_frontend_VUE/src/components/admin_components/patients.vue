@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted} from "vue";
 import axios_instance from "@/axiosSetup";
+import router from "@/router";
 import { useGlobalTemp } from '@/stores/temp_data';
 
 const globalTemp = useGlobalTemp()
@@ -142,6 +143,13 @@ async function blockPatient(patient) {
     }
 }
 
+// Handle View Patient Medical History 
+function viewPatientMedicalHistory(pat_public_id){
+    globalTemp.set("patient_public_id", pat_public_id)
+    globalTemp.set("from", "patients")
+    router.replace("/dashboard/admin/patient-records")
+}
+
 onMounted(() => {
     
     if(globalTemp.get('PatientEditStatus') === 'success'){
@@ -193,52 +201,53 @@ const refreshPatients = () => {
                     <table class="table-style">
                         <thead>
                             <tr>
-                                <th>Id</th>
-                                <th>Patient Info</th>
-                                <th>Contact number</th>
-                                <th>Gender</th>
-                                <th>D.O.B (Y-M-D)</th>
-                                <th>Block/Unblock</th>
+                                <th class="text-center">Id</th>
+                                <th class="text-center">Patient Info</th>
+                                <th class="text-center">Contact number</th>
+                                <th class="text-center">Gender</th>
+                                <th class="text-center">D.O.B (Y-M-D)</th>
+                                <th class="text-center">Block/Unblock</th>
                                 <th class="text-center">Actions</th>
+                                <th class="text-center">Treatment History</th>
                             </tr>
                         </thead>
 
                         <tbody>
                             <tr v-if="data.isLoading">
-                                <td colspan="7" class="py-5 text-center text-muted">
+                                <td colspan="8" class="py-5 text-center text-muted">
                                     <div class="spinner-border spinner-border-sm me-2"></div> Loading...
                                 </td>
                             </tr>
 
                             <tr v-else-if="data.error">
-                                <td colspan="7" class="py-5 text-center text-danger fw-medium">
+                                <td colspan="8" class="py-5 text-center text-danger fw-medium">
                                     {{ data.error }}
                                 </td>
                             </tr>
 
                             <tr v-else-if="data.patCount === 0">
-                                <td colspan="7" class="py-5 text-center text-primary fw-medium">No patient registered yet.</td>
+                                <td colspan="8" class="py-5 text-center text-primary fw-medium">No patient registered yet.</td>
                             </tr>
 
                             <tr v-if="!data.isLoading && !data.error" v-for="(patient) in data.patients" :key="patient.patient_id">
-                                <td class="text-muted fw-bold">{{ patient.patient_public_id }}</td>
+                                <td><div class="text-center fw-bold highlight-text">{{ patient.patient_public_id }}</div></td>
                                 <td>
                                     <div class="d-flex flex-column">
-                                        <span class="fw-bold" style="cursor: pointer;color: #6b27d9;" data-bs-toggle="modal" data-bs-target="#infoDocModal" @click="selectPat(patient)">
+                                        <div class="text-center fw-bold" style="cursor: pointer;color: #6b27d9;" data-bs-toggle="modal" data-bs-target="#infoDocModal" @click="selectPat(patient)">
                                             {{ patient.full_name }}
-                                        </span>
-                                        <small class="text-muted fw-semibold">{{ patient.email }}</small>
+                                        </div>
+                                        <small class="text-center text-muted fw-semibold">{{ patient.email }}</small>
                                     </div>
                                 </td>
-                                <td><span class="text-primary fw-semibold">+91 {{ patient.contact }}</span></td>
-                                <td><span class="text-success fw-medium">{{ patient.gender }}</span></td>
-                                <td><span class="dob-tag fw-medium">{{ patient.dob }}</span></td>
+                                <td><div class="text-center text-primary fw-semibold">+91 {{ patient.contact }}</div></td>
+                                <td><div class="text-center text-success fw-medium">{{ patient.gender }}</div></td>
+                                <td><div class="text-center dob-tag fw-medium">{{ patient.dob }}</div></td>
                 
-                                <td>
+                                <td class="text-center">
                                   <button @click="blockPatient(patient)" class="border-0 btn" title="Block/Unblock">
-                                    <span class="status-pill" :class="patient.is_active ? 'active' : 'inactive'">
+                                    <div class="status-pill" :class="patient.is_active ? 'active' : 'inactive'">
                                         {{ patient.is_active ? "Active" : "Inactive" }}
-                                    </span>
+                                    </div>
                                   </button>
                                 </td>
                                 <td>
@@ -253,6 +262,16 @@ const refreshPatients = () => {
                                             <i class="bi bi-info-circle"></i>
                                         </button>
                                     </div>
+                                </td>
+
+                                <td class="text-center">
+                                    <button @click="viewPatientMedicalHistory(patient.patient_public_id)" type="button" class="view-treatment-btn px-4 rounded-pill btn" 
+                                    title="View Records">
+                                        <div>
+                                            <i class="bi bi-clipboard-data pe-1"></i>
+                                            View Records
+                                        </div>
+                                    </button>
                                 </td>
                             </tr>
                         </tbody>
@@ -424,6 +443,23 @@ const refreshPatients = () => {
     display: flex;
     gap: 8px;
     justify-content: center;
+}
+
+.view-treatment-btn{
+    align-items: center;
+    background: linear-gradient(135deg,#479481ee, #297260ec, #225e57e8); 
+    color: white;
+    border: 1px solid rgb(163, 162, 162);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 145px;
+}
+.view-treatment-btn:hover{
+    background: linear-gradient(135deg,#58ac97ee, #31816dec, #276860e8);
+    color:white;
+    border: 1px solid rgb(131, 130, 130);
 }
 
 .count-bg{

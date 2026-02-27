@@ -10,6 +10,166 @@ from datetime import datetime, timedelta
 from app_backend_Flask.application.models import *
 from ..utils.input_validators import *
 
+class AdminSearchAppointments(Resource):
+    '''This resource consist of 'GET' method which checks 'access token' sent by the client and response with the respective filtered list of all searched appointments'''
+    @jwt_required()   
+    def get(self):
+        user_id = get_jwt_identity()
+        if Roles_Users.user_role(int(user_id)) != "admin":
+            abort(401, message="Admin Access needed.")
+
+        duration = request.args.get("duration")
+        try:
+            duration = non_empty_string(duration, "'duration' parameter")
+            if duration not in ['previous', 'current-week', 'all']:
+                raise ValueError("'duration' parameter can only have value 'all' or 'current-week' or 'previous'.")
+        except ValueError as e:
+            abort(400, message=e)
+
+        try:
+            search_str = non_empty_string(request.args.get("query"))
+        except ValueError:
+            abort(400, message="'query' parameter should not be empty.")
+
+        alt_search_flag = 0
+        searched_doctors_id = [-1]
+        searched_patients_id = [-1]
+
+        if alt_search_flag == 0:
+            # Searches Doctor 
+            searched_doctors = Doctor.query.filter(
+                or_(
+                    Doctor.full_name.contains(search_str),
+                    Doctor.public_id.ilike(search_str)
+                )
+            ).all()
+
+            if len(searched_doctors) > 0:
+                searched_doctors_id = [d.id for d in searched_doctors]
+                alt_search_flag = 1
+                
+            # Searches Patient 
+            searched_patients = Patient.query.filter(
+                or_(
+                    Patient.full_name.contains(search_str),
+                    Patient.public_id.ilike(search_str)
+                )
+            ).all()
+
+            if len(searched_patients) > 0:
+                searched_patients_id = [p.id for p in searched_patients]
+                alt_search_flag = 1
+
+        # Searches for the doctors in departments
+        if alt_search_flag == 0:
+            searched_department = Department.query.filter(
+                Department.name.contains(search_str)
+            ).first()
+
+            if searched_department:
+                searched_doctors_id = [d.id for d in Departments_Doctors.query.filter_by(department_id = searched_department.id).all()]
+
+
+        searched_appointments = Appointment.query.filter(
+            or_(
+                Appointment.doctor_id.in_(searched_doctors_id),
+                Appointment.patient_id.in_(searched_patients_id),
+                Appointment.date.contains(search_str),
+                Appointment.public_id.ilike(search_str),
+                Appointment.start_time.contains(search_str),
+                Appointment.status.ilike(search_str)
+            )
+        ).all()
+
+        if len(searched_appointments) == 0:
+            abort(404, message="No Search Result Found.")
+
+
+        appointments = []
+
+        if duration in ["current-week", "previous"]:
+            
+            current_datetime = datetime.now()
+            weekday_index = int(current_datetime.strftime("%u")) - 1
+            current_week_start_date = current_datetime.date() - timedelta(days=weekday_index)
+
+            # Current weeks all appointments list
+            if duration == "current-week":
+                for i in range(0,7):
+                    ap_date = current_week_start_date + timedelta(days=i)
+                    ap = Appointment.query.filter_by(date=ap_date).all()
+                    appointments += ap
+            # All appointments list before the current week
+            else:
+                appointments = Appointment.query.filter(Appointment.date < current_week_start_date).all()
+            
+        else:
+            # Past all appointments
+            appointments = Appointment.query.all()
+
+        try:
+            appointments_data = []
+            booked_appointments_data = []
+            for ap in appointments:
+                if ap in searched_appointments:
+                    patient = Patient.query.filter_by(id=ap.patient_id).first()
+                    doctor = Doctor.query.filter_by(id=ap.doctor_id).first()
+                    if doctor and patient:
+                        if ap.status == "booked" and duration == "current-week":
+                            booked_appointments_data.append(
+                                {
+                                    'appointment_public_id': ap.public_id,
+                                    'patient_public_id': patient.public_id,
+                                    'patient_full_name': patient.full_name,
+                                    'doctor_full_name': doctor.full_name,
+                                    'doctor_public_id': doctor.public_id,
+                                    'doctor_department': Departments_Doctors.dept_name(doctor.id),
+                                    'date': ap.date.strftime("%Y-%m-%d"),
+                                    'start_time': ap.start_time.strftime("%H:%M"),
+                                    'end_time': ap.end_time.strftime("%H:%M"),
+                                    'status': ap.status,
+                                }
+                            )
+
+                        else:
+                            appointments_data.append(
+                                {
+                                    'appointment_public_id': ap.public_id,
+                                    'patient_public_id': patient.public_id,
+                                    'patient_full_name': patient.full_name,
+                                    'doctor_full_name': doctor.full_name,
+                                    'doctor_public_id': doctor.public_id,
+                                    'doctor_department': Departments_Doctors.dept_name(doctor.id),
+                                    'date': ap.date.strftime("%Y-%m-%d"),
+                                    'start_time': ap.start_time.strftime("%H:%M"),
+                                    'end_time': ap.end_time.strftime("%H:%M"),
+                                    'status': ap.status,
+                                }
+                            )
+                    
+            appointments_data = booked_appointments_data + appointments_data
+
+            if len(appointments_data) == 0:
+                return{ "message":"No Search Result Found."}, 404
+
+            if duration == "current-week":
+                return {
+                    "count": len(appointments_data),
+                    "week_start_date": current_week_start_date.strftime("%Y-%m-%d"),
+                    "week_end_date": (current_week_start_date + timedelta(days=6)).strftime("%Y-%m-%d"),
+                    "appointments": appointments_data
+                }, 200
+            else:
+                appointments_data.reverse()
+                return {
+                    "count": len(appointments_data),
+                    "appointments": appointments_data
+                }, 200
+            
+        except Exception as e:
+            app.logger.exception(f"(Resource) AdminSearchAppointments: (GET) (triggered) an error: {e}")
+            abort(500, message="Admin appointments search data fetching failed.")
+
 class AdminSearchPatientsData(Resource):
     '''This resource consist of 'GET' method which checks 'access token' sent by the client and response with the respective filtered list of all current patient data'''
     @jwt_required()   
@@ -23,15 +183,24 @@ class AdminSearchPatientsData(Resource):
         except ValueError:
             abort(400, message="'query' parameter should not be empty.")
 
-        
-        patients = Patient.query.filter(
-            or_(
-                Patient.full_name.contains(search_str.title()),
-                Patient.public_id.ilike(search_str),
-                Patient.contact.ilike(search_str),
-                Patient.dob.contains(search_str)
-            )
-        ).all()
+        # User active status
+        status_search_flag = False
+        if search_str.lower() in ["active", "inactive"]:
+            patients = Patient.query.all()
+            status_search_flag = True
+            if search_str == "active":
+                active_state = True
+            else:
+                active_state = False
+        else:
+            patients = Patient.query.filter(
+                or_(
+                    Patient.full_name.contains(search_str.title()),
+                    Patient.public_id.ilike(search_str),
+                    Patient.contact.ilike(search_str),
+                    Patient.dob.contains(search_str)
+                )
+            ).all()
 
         if len(patients) == 0:
             abort(404, message="No Search Result Found.")
@@ -40,23 +209,41 @@ class AdminSearchPatientsData(Resource):
             patient_data = []
             for p in patients:
                 t = User.user_email(p.user_id)
-                patient_data.append(
-                    {
-                        'patient_id': p.id,
-                        'patient_public_id': p.public_id,
-                        'user_id': p.user_id,
-                        'full_name': p.full_name,
-                        'contact': p.contact,
-                        'email': t[0],
-                        'is_active': t[1],
-                        'dob': p.dob.strftime("%Y-%m-%d"),
-                        'gender': p.gender.title(),
-                        'height_cm': p.height_cm,
-                        'weight_kg': p.weight_kg
-                    }
-                )
+                if status_search_flag:
+                    if active_state == t[1]:  
+                        patient_data.append(
+                            {
+                                'patient_id': p.id,
+                                'patient_public_id': p.public_id,
+                                'user_id': p.user_id,
+                                'full_name': p.full_name,
+                                'contact': p.contact,
+                                'email': t[0],
+                                'is_active': t[1],
+                                'dob': p.dob.strftime("%Y-%m-%d"),
+                                'gender': p.gender.title(),
+                                'height_cm': p.height_cm,
+                                'weight_kg': p.weight_kg
+                            }
+                        )
+                else:
+                    patient_data.append(
+                        {
+                            'patient_id': p.id,
+                            'patient_public_id': p.public_id,
+                            'user_id': p.user_id,
+                            'full_name': p.full_name,
+                            'contact': p.contact,
+                            'email': t[0],
+                            'is_active': t[1],
+                            'dob': p.dob.strftime("%Y-%m-%d"),
+                            'gender': p.gender.title(),
+                            'height_cm': p.height_cm,
+                            'weight_kg': p.weight_kg
+                        }
+                    )
 
-                patient_data.reverse()
+            patient_data.reverse()
 
             return {
                 "count": len(patient_data),
@@ -80,21 +267,32 @@ class AdminSearchDoctorsData(Resource):
         except ValueError:
             abort(400, message="'query' parameter should not be empty.")
 
-        spec = Specialization.query.filter(Specialization.name.contains(search_str.title())).first()
-        if spec == None:
-            spec_id = 0
+
+        # User active status
+        status_search_flag = False
+        if search_str.lower() in ["active", "inactive"]:
+            doctors = Doctor.query.all()
+            status_search_flag = True
+            if search_str == "active":
+                active_state = True
+            else:
+                active_state = False
         else:
-            spec_id = spec.id
-        
-        doctors = Doctor.query.filter(
-            or_(
-                Doctor.full_name.contains(search_str.title()),
-                Doctor.public_id.ilike(search_str),
-                Doctor.contact.ilike(search_str),
-                Doctor.specialization_id == spec_id,
-                Doctor.license.ilike(search_str)
-            )
-        ).all()
+            spec = Specialization.query.filter(Specialization.name.contains(search_str)).first()
+            if spec == None:
+                spec_id = 0
+            else:
+                spec_id = spec.id
+            
+            doctors = Doctor.query.filter(
+                or_(
+                    Doctor.full_name.contains(search_str.title()),
+                    Doctor.public_id.ilike(search_str),
+                    Doctor.contact.ilike(search_str),
+                    Doctor.specialization_id == spec_id,
+                    Doctor.license.ilike(search_str)
+                )
+            ).all()
 
         if len(doctors) == 0:
             abort(404, message="No Search Result Found.")
@@ -103,25 +301,45 @@ class AdminSearchDoctorsData(Resource):
             doctor_data = []
             for d in doctors:
                 t = User.user_email(d.user_id)
-                doctor_data.append(
-                    {
-                        'doctor_id': d.id,
-                        'doctor_public_id': d.public_id,
-                        'user_id': d.user_id,
-                        'full_name': d.full_name,
-                        'email': t[0],
-                        'is_active': t[1],
-                        'department': Departments_Doctors.dept_name(d.id),
-                        'specialization': Specialization.spec_name(d.specialization_id),
-                        'gender': d.gender.title(),
-                        'license': d.license,
-                        'experience': d.experience,
-                        'description': d.description,
-                        'contact': d.contact
-                    }
-                )
+                if status_search_flag: 
+                    if active_state == t[1]:  
+                        doctor_data.append(
+                            {
+                                'doctor_id': d.id,
+                                'doctor_public_id': d.public_id,
+                                'user_id': d.user_id,
+                                'full_name': d.full_name,
+                                'email': t[0],
+                                'is_active': t[1],
+                                'department': Departments_Doctors.dept_name(d.id),
+                                'specialization': Specialization.spec_name(d.specialization_id),
+                                'gender': d.gender.title(),
+                                'license': d.license,
+                                'experience': d.experience,
+                                'description': d.description,
+                                'contact': d.contact
+                            }
+                        )
+                else:
+                    doctor_data.append(
+                        {
+                            'doctor_id': d.id,
+                            'doctor_public_id': d.public_id,
+                            'user_id': d.user_id,
+                            'full_name': d.full_name,
+                            'email': t[0],
+                            'is_active': t[1],
+                            'department': Departments_Doctors.dept_name(d.id),
+                            'specialization': Specialization.spec_name(d.specialization_id),
+                            'gender': d.gender.title(),
+                            'license': d.license,
+                            'experience': d.experience,
+                            'description': d.description,
+                            'contact': d.contact
+                        }
+                    )
 
-                doctor_data.reverse()
+            doctor_data.reverse()
 
             return {
                 "count": len(doctor_data),
@@ -212,8 +430,8 @@ class DoctorSearchAssignedPatientsData(Resource):
             app.logger.exception(f"(Resource) DoctorSearchAssignedPatientsData: (triggered) an error: {e}")
             abort(500, message="Patients search data fetching failed.")
 
-class DoctorSearchUpcomingAppointments(Resource):
-    '''This resource consist of 'GET' method which checks 'access token' sent by the client and response with the respective filtered list of all upcoming appointments'''
+class DoctorSearchAppointments(Resource):
+    '''This resource consist of 'GET' method which checks 'access token' sent by the client and response with the respective filtered list of all searched appointments'''
     @jwt_required()   
     def get(self):
         user_id = get_jwt_identity()
@@ -224,45 +442,66 @@ class DoctorSearchUpcomingAppointments(Resource):
         if not doctor:
              abort(404, message="Doctor not found.")
 
+        duration = request.args.get("duration")
+        try:
+            duration = non_empty_string(duration, "'duration' parameter")
+            if duration not in ['history', 'current-week', 'all']:
+                raise ValueError("'duration' parameter can only have value 'all' or 'current-week' or 'history'.")
+        except ValueError as e:
+            abort(400, message=e)
+
         try:
             search_str = non_empty_string(request.args.get("query"))
         except ValueError:
             abort(400, message="'query' parameter should not be empty.")
 
-        searched_patient = Patient.query.filter(
+        searched_patients_id = [-1]
+        searched_patients = Patient.query.filter(
             or_(
-                Patient.full_name.contains(search_str.title()),
+                Patient.full_name.contains(search_str),
                 Patient.public_id.ilike(search_str)
             )
-        ).first()
+        ).all()
 
-        if not searched_patient:
-            searched_patient_id = -1
-        else:
-            searched_patient_id = searched_patient.id
+        if len(searched_patients) > 0:
+            searched_patients_id = [p.id for p in searched_patients]
 
         searched_appointments = Appointment.query.filter(
+            Appointment.doctor_id == doctor.id,
             or_(
-                Appointment.patient_id.ilike(searched_patient_id),
+                Appointment.patient_id.in_(searched_patients_id),
                 Appointment.date.contains(search_str),
                 Appointment.public_id.ilike(search_str),
-                Appointment.start_time.contains(search_str)
+                Appointment.start_time.contains(search_str),
+                Appointment.status.ilike(search_str)
             )
         ).all()
 
         if len(searched_appointments) == 0:
             abort(404, message="No Search Result Found.")
 
-        # Current weeks appointments
         appointments = []
 
-        current_datetime = datetime.now()
-        weekday_index = int(current_datetime.strftime("%u")) - 1
-        current_week_start_date = current_datetime.date() - timedelta(days=weekday_index)
-        for i in range(0,7):
-            ap_date = current_week_start_date + timedelta(days=i)
-            ap = Appointment.query.filter_by(doctor_id=doctor.id, date=ap_date, status='booked').all()
-            appointments += ap
+        if duration in ["current-week", "history"]:
+            current_datetime = datetime.now()
+            weekday_index = int(current_datetime.strftime("%u")) - 1
+            current_week_start_date = current_datetime.date() - timedelta(days=weekday_index)
+
+            # Current weeks all appointments list
+            if duration == "current-week":
+                for i in range(0,7):
+                    ap_date = current_week_start_date + timedelta(days=i)
+                    ap = Appointment.query.filter_by(doctor_id=doctor.id, date=ap_date, status='booked').all()
+                    appointments += ap
+            # All the canceled or completed appointments list
+            else:
+                appointments = Appointment.query.filter(
+                    Appointment.doctor_id == doctor.id,
+                    Appointment.status != "booked"
+                ).all()
+        else:
+            # Past all appointments
+            appointments = Appointment.query.filter_by(doctor_id = doctor.id).all()
 
         try:
             appointments_data = []
@@ -292,17 +531,24 @@ class DoctorSearchUpcomingAppointments(Resource):
 
             if len(appointments_data) == 0:
                 return{ "message":"No Search Result Found."}, 404
-            else:
+            
+            elif duration == "current-week":
                 return {
                     "count": len(appointments_data),
                     "week_start_date": current_week_start_date.strftime("%Y-%m-%d"),
                     "week_end_date": (current_week_start_date + timedelta(days=6)).strftime("%Y-%m-%d"),
                     "appointments": appointments_data
                 }, 200
+            else:
+                appointments_data.reverse()
+                return {
+                    "count": len(appointments_data),
+                    "appointments": appointments_data
+                }, 200
             
         except Exception as e:
-            app.logger.exception(f"(Resource) DoctorSearchUpcomingAppointments: (triggered) an error: {e}")
-            abort(500, message="Upcoming Appointments search data fetching failed.")
+            app.logger.exception(f"(Resource) DoctorSearchAppointments: (GET) (triggered) an error: {e}")
+            abort(500, message="Appointments search data fetching failed.")
 
 class PatientSearchUpcomingAppointments(Resource):
     '''This resource consist of 'GET' method which checks 'access token' sent by the client and response with the respective filtered list of all upcoming appointments'''
@@ -321,22 +567,21 @@ class PatientSearchUpcomingAppointments(Resource):
         except ValueError:
             abort(400, message="'query' parameter should not be empty.")
 
-
-        searched_doctor = Doctor.query.filter(
+        searched_doctors_id = [-1]
+        searched_doctors = Doctor.query.filter(
             or_(
-                Doctor.full_name.contains(search_str.title()),
+                Doctor.full_name.contains(search_str),
                 Doctor.public_id.ilike(search_str)
             )
-        ).first()
+        ).all()
 
-        if not searched_doctor:
-            searched_doctor_id = -1
-        else:
-            searched_doctor_id = searched_doctor.id
+        if len(searched_doctors) > 0:
+            searched_doctors_id = [d.id for d in searched_doctors]
 
         searched_appointments = Appointment.query.filter(
+            Appointment.patient_id == patient.id,
             or_(
-                Appointment.doctor_id.ilike(searched_doctor_id),
+                Appointment.doctor_id.in_(searched_doctors_id),
                 Appointment.date.contains(search_str),
                 Appointment.public_id.ilike(search_str),
                 Appointment.start_time.contains(search_str),
@@ -567,32 +812,30 @@ class PatientSearchAppointmentHistory(Resource):
             for sdd in searched_dept_doctors:
                 searched_appointments += Appointment.query.filter(
                     Appointment.patient_id == patient.id, 
-                    Appointment.status == "completed",
                     Appointment.doctor_id == sdd.doctor_id
                 ).all()
         else:
         # Searches the doctors and appointments by their public_id or date in the appointment history
-            searched_doctor = Doctor.query.filter(
+            searched_doctors_id = [-1]
+            searched_doctors = Doctor.query.filter(
                 or_(
-                    Doctor.full_name.contains(search_str.title()),
+                    Doctor.full_name.contains(search_str),
                     Doctor.public_id.ilike(search_str)
                 )
-            ).first()
+            ).all()
 
-            if not searched_doctor:
-                searched_doctor_id = -1
-            else:
-                searched_doctor_id = searched_doctor.id
+            if len(searched_doctors) > 0:
+                searched_doctors_id = [d.id for d in searched_doctors]
 
             searched_appointments = Appointment.query.filter(
                 Appointment.patient_id == patient.id, 
-                Appointment.status == "completed",
 
                 or_(
-                    Appointment.doctor_id.ilike(searched_doctor_id),
+                    Appointment.doctor_id.in_(searched_doctors_id),
                     Appointment.date.contains(search_str),
                     Appointment.public_id.ilike(search_str),
                     Appointment.start_time.contains(search_str),
+                    Appointment.status.ilike(search_str)
                 )
             ).all()
 
@@ -622,6 +865,7 @@ class PatientSearchAppointmentHistory(Resource):
                         'date': ap.date.strftime("%Y-%m-%d"),
                         'start_time': ap.start_time.strftime("%H:%M"),
                         'end_time': ap.end_time.strftime("%H:%M"),
+                        'status': ap.status
                     }
                 )
 

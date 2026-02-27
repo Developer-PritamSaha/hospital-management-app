@@ -108,7 +108,7 @@ async function changeAppointmentStatus(appoint_pub_id, appoint_status) {
             loadAppointments()
         } 
         else if(err.response?.status === 400){
-            triggerAlert(msg, "warning", "bi-exclamation-octagon")
+            appendAlert(msg, "warning", "bi-exclamation-octagon")
         } 
         else {
             appendAlert(`Appointment ${appoint_pub_id} cannot be canceled.`, "danger", "bi-exclamation-triangle")
@@ -450,54 +450,55 @@ const refreshAppointments = () => {
     font-weight: 700;
 }
 
-.cancel-appointment-btn {
-    background:#fde6d8;
-    color: rgb(184, 12, 12);
-    border: 2px solid rgb(226, 76, 49);
+.cancel-appointment-btn{
+    align-items: center;
+    background: linear-gradient(135deg,#c77e7eee, #bb4e4eec, #a13c3ce8); 
+    color: white;
+    border: 1px solid rgb(150, 149, 149);
     border-radius: 8px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
     min-width: 145px;
 }
+.cancel-appointment-btn:hover{
+    background: linear-gradient(135deg,#dd9696f3, #d37070f3, #b16363f3);
+    color:white;
+    border: 1px solid rgb(131, 130, 130);
+}
 
-.cancel-appointment-btn:hover {
-    background:#fce2d2;
-    color: rgb(145, 13, 13);
-    border: 2px solid rgb(197, 56, 31);
+.reschedule-appointment-btn{
+    align-items: center;
+    background: linear-gradient(135deg,#8d88cfee, #4e50bbec, #3e3ca1e8); 
+    color: white;
+    border: 1px solid rgb(136, 135, 135);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 145px;
+}
+.reschedule-appointment-btn:hover{
+    background: linear-gradient(135deg,#9697ddf6, #7a70d3f6, #6364b1f6);
+    color:white;
+    border: 1px solid rgb(131, 130, 130);
 }
 
 .view-treatment-btn{
-    background:#d8fac8;
-    color: #387507;
-    border: 2px solid #238817;
+    align-items: center;
+    background: linear-gradient(135deg,#479481ee, #297260ec, #225e57e8); 
+    color: white;
+    border: 1px solid rgb(163, 162, 162);
     border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 650;
+    font-size: 0.85rem;
+    font-weight: 600;
     cursor: pointer;
     min-width: 145px;
 }
 .view-treatment-btn:hover{
-    background:#ccfcb6;
-    color: #285503;
-    border: 2px solid #13570b;
-}
-
-.reschedule-appointment-btn {
-    background:#d3dafc;
-    color: rgb(41, 9, 78);
-    border: 2px solid rgb(111, 49, 226);
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    min-width: 145px;
-}
-
-.reschedule-appointment-btn:hover {
-    background:#c7d1ff;
-    color: rgb(41, 9, 78);
-    border: 2px solid rgb(76, 10, 190);
+    background: linear-gradient(135deg,#58ac97ee, #31816dec, #276860e8);
+    color:white;
+    border: 1px solid rgb(131, 130, 130);
 }
 
 .spec-tag {

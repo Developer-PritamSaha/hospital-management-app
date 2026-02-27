@@ -10,7 +10,8 @@ import PatientDashboard from '@/views/dashboards/PatientDashboard.vue'
 
 import ADappointments from '@/components/admin_components/appointments_home.vue'
 import ADupcommingAp from '@/components/admin_components/upcomming_appointments.vue'
-import ADcompletedAp from '@/components/admin_components/completed_appointments.vue'
+import ADpreviousAp from '@/components/admin_components/previous_appointments.vue'
+import ADpatientHistory from '@/components/admin_components/patient_medical_history.vue'
 import ADpatients from "@/components/admin_components/patients.vue"
 import ADdoctors from "@/components/admin_components/doctors.vue"
 import ADeditDoc from "@/components/admin_components/edit_doctor.vue"
@@ -18,7 +19,8 @@ import ADeditPat from "@/components/admin_components/edit_patient.vue"
 import ADregDoc from "@/components/admin_components/register_doctor.vue"
 
 import DRappointments from '@/components/doctor_components/appointments_home.vue'
-import DRupcomingAp from '@/components/doctor_components/upcoming.vue'
+import DRupcomingAp from '@/components/doctor_components/upcoming_appointments.vue'
+import DRhistoryAp from '@/components/doctor_components/appointment_history.vue'
 import DRavailability from '@/components/doctor_components/availability.vue'
 import DRpatients from "@/components/doctor_components/assigned_patients.vue"
 import DRpatientTreatment from "@/components/doctor_components/update_patient_history.vue"
@@ -66,17 +68,17 @@ const routes = [
           {
             path: "",
             name: "Appointments_home",
-            redirect: "/dashboard/admin/appointments/upcomming"
+            redirect: "/dashboard/admin/appointments/upcoming"
           },
           {
-            path: "upcomming",
+            path: "upcoming",
             name: "AdminUpcommingAppointments",
             component: ADupcommingAp,
           },
           {
-            path: "completed",
-            name: "AdminCompletedAppointments",
-            component: ADcompletedAp,
+            path: "previous",
+            name: "AdminAllAppointments",
+            component: ADpreviousAp,
           }
         ]
       },
@@ -105,11 +107,11 @@ const routes = [
         name: "AdminPatientEdit",
         component: ADeditPat,
       },
-      // {
-      //   path: "",
-      //   name: "",
-      //   component: ,
-      // },
+      {
+        path: "patient-records",
+        name: "AdminPatientHistory",
+        component: ADpatientHistory
+      }
       
     ]
   },
@@ -183,11 +185,11 @@ const routes = [
             name: "DoctorUpcommingAppointments",
             component: DRupcomingAp,
           },
-          // {
-          //   path: "patient-treatment",
-          //   name: "DoctorPatientTreatment",
-          //   component: DRpatientTreatment,
-          // }
+          {
+            path: "history",
+            name: "DoctorAppointmentHistory",
+            component: DRhistoryAp,
+          }
         ]
       },
       {

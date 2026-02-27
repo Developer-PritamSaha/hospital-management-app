@@ -106,14 +106,13 @@ provide('triggerChildAlert', appendAlert)
             
             <div class="col-12 d-flex justify-content-center mb-2">
                 <div class="nav-slider-container">
-                    <router-link to="/dashboard/admin/appointments/upcomming" class="nav-slider-item">
+                    <router-link to="/dashboard/admin/appointments/upcoming" class="nav-slider-item">
                         Upcoming
                     </router-link>
-                    <router-link to="/dashboard/admin/appointments/completed" class="nav-slider-item">
-                        Past
+                    <router-link to="/dashboard/admin/appointments/previous" class="nav-slider-item">
+                        Previous
                     </router-link>
                 </div>
-                
             </div>
 
             <div class="col-12">

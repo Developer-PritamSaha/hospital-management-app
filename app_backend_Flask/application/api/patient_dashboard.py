@@ -516,7 +516,7 @@ class PatientAppointmentHistory(Resource):
             abort(404, message="Patient not found.")
 
 
-        appointments = Appointment.query.filter_by(patient_id=patient.id, status="completed").all()
+        appointments = Appointment.query.filter_by(patient_id=patient.id).all()
         
         try:
             pat_appointments_history = []
@@ -541,6 +541,7 @@ class PatientAppointmentHistory(Resource):
                         'date': ap.date.strftime("%Y-%m-%d"),
                         'start_time': ap.start_time.strftime("%H:%M"),
                         'end_time': ap.end_time.strftime("%H:%M"),
+                        'status': ap.status
                     }
                 )
 

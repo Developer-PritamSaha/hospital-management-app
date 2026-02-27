@@ -20,7 +20,12 @@ async function loadAppointments() {
     data.value.isLoading = true
     data.value.error = null
     try {
-        const response = await axios_instance.get("/api/dashboard/doctor/appointments")
+        const response = await axios_instance.get("/api/dashboard/doctor/appointments",
+        {  
+            params: {
+                "duration": "current-week"
+            }
+        })
         data.value.appointCount = response.data?.count
         data.value.week_start_date = response.data?.week_start_date
         data.value.week_end_date = response.data?.week_end_date
@@ -42,6 +47,7 @@ async function loadFilteredAppointments() {
         const response = await axios_instance.get("/api/dashboard/doctor/appointments/search",
         {  
             params: {
+                "duration": "current-week",
                 "query": globalTemp.get("searchQuery")
             }
         })
@@ -162,6 +168,7 @@ const refreshAppointments = () => {
                             <th class="text-center">Patient Info</th>
                             <th class="text-center">Date (Y-M-D)</th>
                             <th class="text-center">Time (24 hr.)</th>
+                            <th class="text-center">Status</th>
                             <th class="text-center">Patient History</th>
                             <th class="text-center">Actions</th>
                         </tr>
@@ -169,19 +176,19 @@ const refreshAppointments = () => {
 
                     <tbody>
                         <tr v-if="data.isLoading">
-                            <td colspan="6" class="py-5 text-center text-muted">
+                            <td colspan="7" class="py-5 text-center text-muted">
                                 <div class="spinner-border spinner-border-sm me-2"></div> Loading...
                             </td>
                         </tr>
 
                         <tr v-else-if="data.error">
-                            <td colspan="6" class="py-5 text-center text-danger fw-medium">
+                            <td colspan="7" class="py-5 text-center text-danger fw-medium">
                                 {{ data.error }}
                             </td>
                         </tr>
 
                         <tr v-else-if="data.appointCount === 0">
-                            <td colspan="6" class="py-5">
+                            <td colspan="7" class="py-5">
                                 <div class="d-flex flex-column align-items-center justify-content-center">
                                     <img src="@/assets/images/undraw_medicine_hqqg.svg" 
                                         class="img-fluid mb-4" 
@@ -194,7 +201,7 @@ const refreshAppointments = () => {
 
                         <tr v-else v-for="(appoint) in data.appointments" 
                         :key="appoint.appointment_public_id">
-                            <td class="text-center text-muted fw-bold">{{ appoint.appointment_public_id }}</td>
+                            <td><div class="text-center highlight-text fw-bold">{{ appoint.appointment_public_id }}</div></td>
                             <td>
                                 <div class="d-flex flex-column">
                                     <span class="text-center fw-bold" style="color: #6b27d9;">
@@ -209,6 +216,15 @@ const refreshAppointments = () => {
                             </div></td>
 
                             <td class="text-center">
+                                <div v-if="appoint.status === 'booked'" class="status-pill booked">
+                                    Booked
+                                </div>
+                                <div v-else class="status-pill unavailable">
+                                    {{ appoint.status }}
+                                </div>
+                            </td>
+
+                            <td class="text-center">
                                 <div>
                                     <button 
                                     @click="updatePatientHistory(appoint)" class="border-0 btn" title="Update History">
@@ -220,8 +236,8 @@ const refreshAppointments = () => {
                                 </div>
                             </td>
                             
-                            <td class="text-center">
-                                <div>
+                            <td >
+                                <div class="text-center">
                                     <button @click="changeAppointmentStatus(appoint.appointment_public_id, 'completed')" class="border-0 btn" title="Mark Complete" :disabled="!appoint.is_treatment_exist">
                                         <div class="button-pill complete">
                                             <i class="bi bi-check2-circle pe-1"></i>
@@ -307,6 +323,11 @@ const refreshAppointments = () => {
     background-color: #f9ffff;
 }
 
+.highlight-text{
+    color: #341079;
+    font-weight: 700;
+}
+
 .button-pill {
     padding: 8px 15px;
     border-radius: 20px;
@@ -341,6 +362,27 @@ const refreshAppointments = () => {
     border-radius: 4px;
     font-size: 0.8rem;
     color: #123567;
+}
+
+.status-pill {
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-pill.booked {
+    background-color: #faf4c1;
+    color: #a3560e;
+    border-style: solid;
+    border-color: #d4ae2f;
+}
+
+.status-pill.unavailable {
+    background-color: #c5c5c2;
+    color: #464444;
+    border-style: solid;
+    border-color: #747372;
 }
 
 .count-bg{

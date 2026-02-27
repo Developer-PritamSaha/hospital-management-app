@@ -93,11 +93,12 @@ api.add_resource(UserLogout, "/api/logout")
 api.add_resource(UserLogoutEverywhere, "/api/logout/all")
 
 ## Search APIs
+api.add_resource(AdminSearchAppointments, "/api/dashboard/admin/appointments/search")
 api.add_resource(AdminSearchPatientsData, "/api/dashboard/admin/patients/search")
 api.add_resource(AdminSearchDoctorsData, "/api/dashboard/admin/doctors/search")
 
 api.add_resource(DoctorSearchAssignedPatientsData, "/api/dashboard/doctor/assigned-patients/search")
-api.add_resource(DoctorSearchUpcomingAppointments, "/api/dashboard/doctor/appointments/search")
+api.add_resource(DoctorSearchAppointments, "/api/dashboard/doctor/appointments/search")
 
 api.add_resource(PatientSearchUpcomingAppointments, "/api/dashboard/patient/upcoming-appointments/search")
 api.add_resource(PatientSearchDepartments, "/api/dashboard/patient/departments/search")
@@ -106,7 +107,10 @@ api.add_resource(PatientSearchAppointmentHistory, "/api/dashboard/patient/appoin
 
 ## Admin APIs
 api.add_resource(AdminDashboard, "/api/dashboard/admin")
+api.add_resource(AdminAppointments, "/api/dashboard/admin/appointments")
 api.add_resource(AdminPatientsData, "/api/dashboard/admin/patients")
+api.add_resource(AdminPatientAppointmentHistory, "/api/dashboard/admin/patient-appointments")
+api.add_resource(AdminPatientTreatmentData, "/api/dashboard/admin/patient-treatment")
 api.add_resource(AdminDoctorsData, "/api/dashboard/admin/doctors")
 api.add_resource(StatsCount, "/api/dashboard/admin/stats")
 api.add_resource(DepartmentList, "/api/dashboard/admin/departments")
@@ -121,7 +125,7 @@ api.add_resource(DoctorManageAvailability, "/api/dashboard/doctor/availability")
 api.add_resource(DoctorManageAppointments, "/api/dashboard/doctor/appointments")
 api.add_resource(DoctorAssignedPatient, "/api/dashboard/doctor/assigned-patients")
 api.add_resource(DoctorPatientTreatmentHistory, "/api/dashboard/doctor/patient-history")
-api.add_resource(PatientAppointmentTreatmentData, "/api/dashboard/doctor/treatment-data")
+api.add_resource(DoctorPatientAppointmentTreatmentData, "/api/dashboard/doctor/treatment-data")
 
 ## Patient APIs
 api.add_resource(PatientDashboard, "/api/dashboard/patient")
