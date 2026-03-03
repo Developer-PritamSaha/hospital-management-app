@@ -231,9 +231,18 @@ const refreshAvailability = () => {
                 </div>
 
                 <div v-if="!data.isLoading & !data.error & data.availCount === 7" class="col-12 p-3 d-flex justify-content-center gap-2">
-                    <router-link to="/dashboard/patient/doctor-list"><button type="button" class="btn px-4 rounded-pill clear-btn">
-                        Back
-                    </button></router-link>
+            
+                    <router-link v-if="globalTemp.get('from') == 'doctor-list'" to="/dashboard/patient/doctor-list">
+                        <button type="button" class="btn px-4 rounded-pill clear-btn" title="Back">
+                            Back
+                        </button>
+                    </router-link>
+                    <router-link v-else-if="globalTemp.get('from') == 'appointments'" to="/dashboard/patient/appointments">
+                        <button type="button" class="btn px-4 rounded-pill clear-btn" title="Back">
+                            Back
+                        </button>
+                    </router-link>
+                    
                     <button @click="bookAppointment" class="btn px-4 text-white rounded-pill shadow-sm book-btn" v-if="isProcessing" :disabled="isProcessing" id="clicked">
                         <span>Booking...</span>
                     </button>

@@ -190,9 +190,9 @@ class PatientBookAppointment(Resource):
 
         doc_public_id = request.args.get("doctor_public_id")
         try:
-            doc_public_id = non_empty_string(doc_public_id, "doctor_public_id parameter")
+            doc_public_id = non_empty_string(doc_public_id)
         except ValueError as e:
-            abort(400, message=e)
+            abort(400, message="'doctor_public_id' parameter should be an string and not empty.")
 
         doctor = Doctor.query.filter_by(public_id=doc_public_id).first()
         if not doctor:

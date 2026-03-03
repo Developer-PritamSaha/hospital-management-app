@@ -7,6 +7,8 @@ class Config():
     SQLITE_DB_DIR = None
     SQLALCHEMY_DATABASE_URI = None
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    CELERY_BROKER_URL = None
+    CELERY_RESULT_BACKEND = None
 
 class LocalDevConfig(Config):
     DEBUG = False
@@ -18,3 +20,5 @@ class LocalDevConfig(Config):
     JWT_TOKEN_LOCATION = ["headers", "json", "cookies"]
     JWT_HEADER_TYPE = "Bearer"
     PROPAGATE_EXCEPTIONS = True
+    CELERY_BROKER_URL = "redis://localhost:6379/1"
+    CELERY_RESULT_BACKEND = "redis://localhost:6379/2"

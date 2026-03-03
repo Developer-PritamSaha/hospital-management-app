@@ -6,11 +6,16 @@ from flask_cors import CORS
 
 from app_backend_Flask.application.app_config import LocalDevConfig
 from app_backend_Flask.application.extensions import db
+from app_backend_Flask.application.make_celery import init_celery_app
+from app_backend_Flask.application.subprocess_starter import *
 import logging
 
-logging.basicConfig(filename='app.log', level=logging.DEBUG, format=f'%(asctime)s - %(levelname)s - %(name)s : %(message)s')
+logging.basicConfig(filename='./logs/app.log', level=logging.DEBUG, format=f'%(asctime)s - %(levelname)s - %(name)s : %(message)s')
 
 app = None
+api = None
+jwt = None
+celery = None
 
 def create_app():
     app = Flask(__name__, static_folder="./app_frontend_VUE/dist", static_url_path="")
@@ -23,15 +28,19 @@ def create_app():
 
     # Initialize extensions
     db.init_app(app)
-
+    api = Api(app)
+    jwt = JWTManager(app)
     app.app_context().push()
-    return app
 
-app = create_app()
+    celery = init_celery_app(app)
+
+    return app, api, jwt, celery
+
+
+app, api, jwt, celery = create_app()
+
 CORS(app, resources={r"/api/*": {"origins": "*"}}) ## For dev uses (not recommended, this will expose the api endpoints to any domains)
 
-api = Api(app)
-jwt = JWTManager(app)
 
 ## Imports all the Models so they are loaded 
 from app_backend_Flask.application.models import *
@@ -79,8 +88,8 @@ def revoked_token_callback(jwt_header, jwt_payload):
 ## Imports all the API resources so they are loaded 
 from app_backend_Flask.application.api import *
 
-# Import the Vue frontend to serve
-from app_backend_Flask.application.index import *
+# Import the app index routes and frontend serve route
+from app_backend_Flask.application.index_routes import *
 
 ### Adding API resorces to their respective routes
 ## Login Registration APIs
@@ -136,6 +145,10 @@ api.add_resource(PatientDepartmentList, "/api/dashboard/patient/departments")
 api.add_resource(PatientAppointmentHistory, "/api/dashboard/patient/appointment-history")
 api.add_resource(PatientTreatmentData, "/api/dashboard/patient/appointment-treatment")
 
+## Celery job APIs
+api.add_resource(TestJob,"/api/test-job")
+
+
 if __name__ == '__main__':
   init_success = False
   ## Create the database tables or schema
@@ -154,15 +167,18 @@ if __name__ == '__main__':
     Department.create_default_departments()
     Specialization.create_default_specializations()
 
+    # Start celery services
+    start_celery_workers_beats()
+
     # Build frontend distribution
-    build_frontend_dist(rebuild=False) ## rebuild=False
+    build_frontend_dist(build=True, rebuild=True)
 
     init_success = True
 
   except Exception as e:
     db.session.rollback()
     app.logger.exception(f"App Initialization failed: (cause) {e}")
-    print("*>> App Initialization failed..")
+    print("[!] App Initialization failed..")
 
 
   if(init_success):

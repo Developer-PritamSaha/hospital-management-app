@@ -180,12 +180,11 @@ const refreshData = () => {
 
                                 <td class="text-center">
                                     <div>
-                                        <button 
-                                        @click="loadTreatmentData(appoint.appointment_public_id, appoint.doctor_full_name)" class="border-0 btn" 
-                                        title="View Treatment" data-bs-toggle="modal" data-bs-target="#treatmentDataModal">
-                                            <div class="button-pill history">
-                                                <i class="bi bi-clipboard2-pulse pe-1"></i>
-                                                View
+                                        <button @click="loadTreatmentData(appoint.appointment_public_id, appoint.doctor_full_name)" type="button" class="view-treatment-btn px-4 rounded-pill btn" data-bs-toggle="modal" data-bs-target="#treatmentDataModal"
+                                        title="View Treatment">
+                                            <div>
+                                                <i class="bi bi-clipboard-check pe-1"></i>
+                                                View Treatment
                                             </div>
                                         </button>
                                     </div>
@@ -311,21 +310,21 @@ const refreshData = () => {
     background-color: #f9ffff;
 }
 
-.button-pill {
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.8rem;
+.view-treatment-btn{
+    align-items: center;
+    background: linear-gradient(135deg,#8f6ec7ee, #724ebbec, #5c3ca1e8); 
+    color: white;
+    border: 1px solid gray;
+    border-radius: 8px;
+    font-size: 0.85rem;
     font-weight: 600;
+    cursor: pointer;
 }
-.button-pill.history {
-    background-color: #fef6f2;
-    color: #b97a1c;
-    border-style: solid;
-    border-color: #ebaf7e;
+.view-treatment-btn:hover{
+    background: linear-gradient(135deg,#ab8fe7, #9170d3, #7f63b1);
+    color:white;
 }
 
-
-/* Specialization Tag */
 .spec-tag {
     background: #f4f1f9;
     padding: 5px 8px;

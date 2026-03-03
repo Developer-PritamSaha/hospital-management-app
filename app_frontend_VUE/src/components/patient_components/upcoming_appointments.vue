@@ -212,7 +212,7 @@ const refreshAppointments = () => {
                                 <th class="text-center">Date (Y-M-D)</th>
                                 <th class="text-center">Time (24 hr.)</th>
                                 <th class="text-center">Status</th>
-                                <th class="text-center">Actions</th>
+                                <th class="text-center">Manage</th>
                             </tr>
                         </thead>
 
@@ -283,15 +283,15 @@ const refreshAppointments = () => {
                                         <button @click="loadTreatmentData(appoint.appointment_public_id,appoint.doctor_full_name)" type="button" class="view-treatment-btn px-4 rounded-pill btn" 
                                         title="View Treatment" data-bs-toggle="modal" data-bs-target="#treatmentDataModal" v-if="appoint.status === 'completed'">
                                             <div>
-                                                <i class="bi bi-clipboard2-check pe-1 "></i>
-                                                View
+                                                <i class="bi bi-calendar-check pe-1 "></i>
+                                                View Details
                                             </div>
                                         </button>
 
                                         <button @click="rescheduleAppointment(appoint.doctor_public_id)" type="button" class="reschedule-appointment-btn px-4 rounded-pill btn" 
                                         title="Reschedule Appointment" v-if="appoint.status === 'canceled'">
                                             <div>
-                                                <i class="bi bi-calendar-check pe-1 "></i>
+                                                <i class="bi bi-calendar-week pe-1 "></i>
                                                 Reschedule
                                             </div>
                                         </button>
@@ -508,6 +508,21 @@ const refreshAppointments = () => {
     font-size: 0.8rem;
     font-weight: 500;
     color: #123567;
+}
+
+.input-fields {
+    background-color: #f3f6fa;
+    border: 1px solid #cee3fc;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+.input-fields:disabled{
+    background-color: #f8fcfb;
+    border: 1px solid #bdd5f1;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    transition: all 0.2s ease;
 }
 
 .status-pill {

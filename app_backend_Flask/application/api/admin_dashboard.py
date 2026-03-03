@@ -89,7 +89,7 @@ class AdminAppointments(Resource):
             if duration not in ['previous', 'current-week', 'all']:
                 raise ValueError("'duration' parameter can only have value 'all' or 'current-week' or 'previous'.")
         except ValueError as e:
-            abort(400, message=e)
+            abort(400, message=str(e))
 
 
         appointments = []
@@ -545,9 +545,9 @@ class AdminManageDoctor(Resource):
 
         user_role = Roles_Users.user_role(int(args["doctor_user_id"]))
         if user_role == "admin":
-            abort(400, message=f"Admin cannot be {'unblocked' if args["is_active"] else 'blocked'}.")
+            abort(400, message=f"Admin cannot be {'unblocked' if args['is_active'] else 'blocked'}.")
         elif user_role == "patient":
-            abort(400, message=f"Patient cannot be {'unblocked' if args["is_active"] else 'blocked'}.")
+            abort(400, message=f"Patient cannot be {'unblocked' if args['is_active'] else 'blocked'}.")
 
         doctor = User.query.filter_by(id=int(args["doctor_user_id"])).first()
         if not doctor:
@@ -560,8 +560,8 @@ class AdminManageDoctor(Resource):
             doc_id = doc.id
 
         try:
-            if doctor.is_active != args["is_active"]:
-                if not args["is_active"]:
+            if doctor.is_active != args['is_active']:
+                if not args['is_active']:
                     doctor.is_active = False
                     db.session.flush()
 
@@ -583,10 +583,10 @@ class AdminManageDoctor(Resource):
         except Exception as e:
             db.session.rollback()
             app.logger.exception(f"(Resource) AdminManageDoctor: 'POST' (triggered) an error: {e}")
-            abort(500, message=f"Doctor {'unblocking' if args["is_active"] else 'blocking'} failed.")
+            abort(500, message=f"Doctor {'unblocking' if args['is_active'] else 'blocking'} failed.")
         else:
             db.session.commit()
-            return {"message": f"Doctor {'unblocked' if args["is_active"] else 'blocked'} successfully."}, 200
+            return {"message": f"Doctor {'unblocked' if args['is_active'] else 'blocked'} successfully."}, 200
         
     @jwt_required()
     def patch(self):    
@@ -748,17 +748,17 @@ class AdminManagePatient(Resource):
 
         user_role = Roles_Users.user_role(int(args["patient_user_id"]))
         if user_role == "admin":
-            abort(400, message=f"Admin cannot be {'unblocked' if args["is_active"] else 'blocked'}.")
+            abort(400, message=f"Admin cannot be {'unblocked' if args['is_active'] else 'blocked'}.")
         elif user_role == "doctor":
-            abort(400, message=f"Doctor cannot be {'unblocked' if args["is_active"] else 'blocked'}.")
+            abort(400, message=f"Doctor cannot be {'unblocked' if args['is_active'] else 'blocked'}.")
 
         patient = User.query.filter_by(id=int(args["patient_user_id"])).first()
         if not patient:
              abort(404, message="Patient donot exist.")
 
         try:
-            if patient.is_active != args["is_active"]:
-                if not args["is_active"]:
+            if patient.is_active != args['is_active']:
+                if not args['is_active']:
                     patient.is_active = False
                     db.session.flush()
                     # Invalidate all the existing tokens
@@ -773,10 +773,10 @@ class AdminManagePatient(Resource):
         except Exception as e:
             db.session.rollback()
             app.logger.exception(f"(Resource) AdminManagePatient: 'POST' (triggered) an error: {e}")
-            abort(500, message=f"Patient {'unblocking' if args["is_active"] else 'blocking'} failed.")
+            abort(500, message=f"Patient {'unblocking' if args['is_active'] else 'blocking'} failed.")
         else:
             db.session.commit()
-            return {"message": f"Patient {'unblocked' if args["is_active"] else 'blocked'} successfully."}, 200
+            return {"message": f"Patient {'unblocked' if args['is_active'] else 'blocked'} successfully."}, 200
         
     @jwt_required()
     def patch(self):    

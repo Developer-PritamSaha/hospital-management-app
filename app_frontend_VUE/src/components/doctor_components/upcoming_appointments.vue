@@ -227,29 +227,37 @@ const refreshAppointments = () => {
                             <td class="text-center">
                                 <div>
                                     <button 
-                                    @click="updatePatientHistory(appoint)" class="border-0 btn" title="Update History">
-                                        <div class="button-pill history">
-                                            <i class="bi bi-clipboard2-plus pe-1"></i>
-                                             Update
+                                    @click="updatePatientHistory(appoint)" type="button" class="update-btn px-4 rounded-pill btn" 
+                                    title="Update History" >
+                                        <div >
+                                            <i class="bi bi-clipboard-plus pe-1"></i>
+                                            Update
                                         </div>
-                                    </button>
+                                    </button>  
                                 </div>
                             </td>
                             
                             <td >
-                                <div class="text-center">
-                                    <button @click="changeAppointmentStatus(appoint.appointment_public_id, 'completed')" class="border-0 btn" title="Mark Complete" :disabled="!appoint.is_treatment_exist">
-                                        <div class="button-pill complete">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button 
+                                    @click="changeAppointmentStatus(appoint.appointment_public_id, 'completed')" type="button" class="complete-ap-btn px-4 rounded-pill btn" 
+                                    title="Mark Complete" :disabled="!appoint.is_treatment_exist">
+                                        <div >
                                             <i class="bi bi-check2-circle pe-1"></i>
-                                             Mark Complete
+                                            Mark Complete
                                         </div>
-                                    </button>
-                                    <button @click="selectAppoint(appoint.appointment_public_id)" class="border-0 btn" title="Mark Cancel" data-bs-toggle="modal" data-bs-target="#cancelAppointmentModal">
-                                        <div class="button-pill cancel">
-                                            <i class="bi bi-x-circle pe-1 "></i>
+                                    </button>  
+
+                                    <button 
+                                    @click="selectAppoint(appoint.appointment_public_id)" type="button" 
+                                    class="cancel-ap-btn px-4 rounded-pill btn" 
+                                    title="Mark Cancel" data-bs-toggle="modal" data-bs-target="#cancelAppointmentModal">
+                                        <div >
+                                            <i class="bi bi-x-circle pe-1"></i>
                                             Mark Cancel
                                         </div>
                                     </button>
+
                                 </div>
                             </td>
                             
@@ -328,32 +336,60 @@ const refreshAppointments = () => {
     font-weight: 700;
 }
 
-.button-pill {
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.8rem;
+.cancel-ap-btn{
+    align-items: center;
+    background: linear-gradient(135deg,#c77e7eee, #bb4e4eec, #a13c3ce8); 
+    color: white;
+    border: 1px solid rgb(150, 149, 149);
+    border-radius: 8px;
+    font-size: 0.85rem;
     font-weight: 600;
+    cursor: pointer;
+    min-width: 145px;
+}
+.cancel-ap-btn:hover{
+    background: linear-gradient(135deg,#dd9696f3, #d37070f3, #b16363f3);
+    color:white;
+    border: 1px solid rgb(131, 130, 130);
 }
 
-.button-pill.complete {
-    background-color: #e6fffa;
-    color: #047857;
-    border-style: solid;
-    border-color: #15b98b;
+.update-btn{
+    align-items: center;
+    background: linear-gradient(135deg,#8d88cfee, #4e50bbec, #3e3ca1e8); 
+    color: white;
+    border: 1px solid rgb(136, 135, 135);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 145px;
+}
+.update-btn:hover{
+    background: linear-gradient(135deg,#9697ddf6, #7a70d3f6, #6364b1f6);
+    color:white;
+    border: 1px solid rgb(131, 130, 130);
 }
 
-.button-pill.cancel {
-    background-color: #fef2f2;
-    color: #b91c1c;
-    border-style: solid;
-    border-color: #f06868;
+.complete-ap-btn{
+    align-items: center;
+    background: linear-gradient(135deg,#479481ee, #297260ec, #225e57e8); 
+    color: white;
+    border: 1px solid rgb(163, 162, 162);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 145px;
 }
-
-.button-pill.history {
-    background-color: #f2f2fe;
-    color: #1c24b9;
-    border-style: solid;
-    border-color: #7e8eeb;
+.complete-ap-btn:hover{
+    background: linear-gradient(135deg,#58ac97ee, #31816dec, #276860e8);
+    color:white;
+    border: 1px solid rgb(131, 130, 130);
+}
+.complete-ap-btn:disabled{
+    background: linear-gradient(135deg,#58ac97ee, #31816dec, #276860e8);
+    color:white;
+    border: 1px solid rgb(131, 130, 130);
 }
 
 .date-tag {

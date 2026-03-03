@@ -177,8 +177,8 @@ const refreshDoctors = () => {
                                 <td colspan="6" class="py-5 text-center text-primary fw-medium">No doctor in the current department yet.</td>
                             </tr>
 
-                            <tr v-if="!data.isLoading && !data.error" v-for="(doctor) in data.doctors" :key="doctor.doctor_id">
-                                <td class="text-center text-muted fw-bold">{{ doctor.doctor_public_id }}</td>
+                            <tr v-else v-for="(doctor) in data.doctors" :key="doctor.doctor_id">
+                                <td><div class="text-center highlight-text fw-bold">{{ doctor.doctor_public_id }}</div></td>
                                 <td class="text-center">
                                     <div class="fw-bold" style="cursor: pointer;color: #6b27d9;" data-bs-toggle="modal" data-bs-target="#infoDocModal" @click="selectDoc(doctor)">
                                         {{ doctor.full_name }}
@@ -325,33 +325,37 @@ const refreshDoctors = () => {
 }
 
 .check-btn{
-    background:#d0d9ff;
-    color: #072175;
-    border: 1px solid #2847d3;
+    align-items: center;
+    background: linear-gradient(135deg,#8d88cfee, #4e50bbec, #3e3ca1e8); 
+    color: white;
+    border: 1px solid rgb(136, 135, 135);
     border-radius: 8px;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
+    min-width: 145px;
 }
 .check-btn:hover{
-    background:#c6cffa;
-    color: #030f55;
-    border: 1px solid #0d2a79;
+    background: linear-gradient(135deg,#9697ddf6, #7a70d3f6, #6364b1f6);
+    color:white;
+    border: 1px solid rgb(131, 130, 130);
 }
 
 .view-btn{
-    background:#d8fac8;
-    color: #387507;
-    border: 1px solid #238817;
+    align-items: center;
+    background: linear-gradient(135deg,#479481ee, #297260ec, #225e57e8); 
+    color: white;
+    border: 1px solid rgb(163, 162, 162);
     border-radius: 8px;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
+    min-width: 145px;
 }
 .view-btn:hover{
-    background:#ccfcb6;
-    color: #285503;
-    border: 1px solid #13570b;
+    background: linear-gradient(135deg,#58ac97ee, #31816dec, #276860e8);
+    color:white;
+    border: 1px solid rgb(131, 130, 130);
 }
 
 /* Specialization Tag */

@@ -2,6 +2,7 @@ __pycache__/
 temp/
 test/
 admin_credential.txt
+celerybeat-schedule*
 *_cred.txt
 *.sqlite3
 *.log

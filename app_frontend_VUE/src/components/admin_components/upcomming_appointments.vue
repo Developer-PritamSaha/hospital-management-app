@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted, inject} from "vue";
 import axios_instance from "@/axiosSetup";
-import router from "@/router";
 import { useGlobalTemp } from '@/stores/temp_data';
 
 const globalTemp = useGlobalTemp()
@@ -70,11 +69,68 @@ async function loadFilteredAppointments() {
     }
 }
 
-// Handle View Patient Medical History 
-function viewPatientMedicalHistory(pat_public_id){
-    globalTemp.set("patient_public_id", pat_public_id)
-    globalTemp.set("from", "upcoming-AP")
-    router.replace("/dashboard/admin/patient-records")
+const appointToBeCanceled = ref(null)
+const selectAppoint = (appoint_pub_id) => {
+    appointToBeCanceled.value = appoint_pub_id
+}
+
+// Handle appointments canceling
+async function changeAppointmentStatus(appoint_pub_id, appoint_status) {
+    try {
+        const response = await axios_instance.patch("/api/dashboard/admin/appointments", 
+          {
+            "appointment_public_id": appoint_pub_id,
+            "status": appoint_status
+          }
+        )
+        triggerAlert(`Appointment ${appoint_pub_id} has been canceled.`,'success',"bi-check-circle")
+        appointToBeCanceled.value = null
+        loadAppointments()
+    } catch (err) {
+        let msg = err.response?.data?.message || "Failed to cancel the appointment"
+        if(err.response?.status === 409){
+            triggerAlert(msg, "warning", "bi-exclamation-octagon")
+            loadAppointments()
+        } 
+        else if(err.response?.status === 400){
+            triggerAlert(msg, "warning", "bi-exclamation-octagon")
+        } 
+        else {
+            triggerAlert(`Appointment ${appoint_pub_id} cannot be canceled.`, "danger", "bi-exclamation-triangle")
+        }
+    }
+}
+
+// Load Appointment treatment data
+const treatmentData = ref(null)
+const ap_doc_name = ref("NA")
+const treatmentDataLoading = ref(false)
+const treatmentDataError = ref(null)
+async function loadTreatmentData(ap_pub_id, doc_name) {
+    treatmentData.value = "Empty"
+    treatmentDataLoading.value = true
+    treatmentDataError.value = null
+    try {
+        const response = await axios_instance.get("/api/dashboard/admin/patient-treatment",{
+            params: {
+                "appointment_public_id": ap_pub_id
+            }
+        })
+        if (response?.data.status === "available"){
+            treatmentData.value = response?.data
+            ap_doc_name.value = doc_name
+        }
+        else{
+            treatmentDataError.value = "Treatment Data Unavailable."
+        }
+
+        globalTemp.reset("patient_public_id")
+    } catch (err) {
+        treatmentDataError.value = err.response?.data?.message || err.message
+        triggerAlert("Treatment Data loading failed.", "danger", "bi-exclamation-triangle")
+    } finally {
+        treatmentDataLoading.value = false
+    }
 }
 
 onMounted(() => {
@@ -125,7 +181,7 @@ const refreshAppointments = () => {
                             <th class="text-center">Date (Y-M-D)</th>
                             <th class="text-center">Time (24 hr.)</th>
                             <th class="text-center">Status</th>
-                            <th class="text-center">Patient History</th>
+                            <th class="text-center">Manage</th>
                         </tr>
                     </thead>
 
@@ -192,13 +248,30 @@ const refreshAppointments = () => {
                             </td>
                             
                             <td class="text-center">
-                                <button @click="viewPatientMedicalHistory(appoint.patient_public_id)" type="button" class="view-treatment-btn px-4 rounded-pill btn" 
-                                title="View Records">
-                                    <div>
-                                        <i class="bi bi-clipboard-data pe-1"></i>
-                                        View Records
-                                    </div>
-                                </button>
+                                <div>
+                                    <button @click="selectAppoint(appoint.appointment_public_id)" type="button" class="cancel-appointment-btn px-4 rounded-pill btn" 
+                                    title="Cancel Appointment" data-bs-toggle="modal" data-bs-target="#cancelAppointmentModal" v-if="appoint.status === 'booked'">
+                                        <div>
+                                            <i class="bi bi-calendar-x pe-1 "></i>
+                                            Cancel
+                                        </div>
+                                    </button>
+                                    <button @click="loadTreatmentData(appoint.appointment_public_id,appoint.doctor_full_name)" type="button" class="view-treatment-btn px-4 rounded-pill btn" 
+                                    title="View Treatment Data" data-bs-toggle="modal" data-bs-target="#treatmentDataModal" v-if="appoint.status === 'completed'">
+                                        <div>
+                                            <i class="bi bi-calendar-check pe-1 "></i>
+                                            View Data
+                                        </div>
+                                    </button>
+
+                                    <button @click="rescheduleAppointment(appoint.doctor_public_id)" type="button" class="reschedule-appointment-btn px-4 rounded-pill btn" 
+                                    title="Reschedule Appointment" v-if="appoint.status === 'canceled'" disabled>
+                                        <div>
+                                            <i class="bi bi-calendar-week pe-1 "></i>
+                                            Reschedule
+                                        </div>
+                                    </button>
+                                </div>
                             </td>
                             
                         </tr>
@@ -207,6 +280,106 @@ const refreshAppointments = () => {
             </div>
         </div>
 
+        <!-- Confirm Appointment Cancel Modal -->
+        <div class="modal fade" id="cancelAppointmentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm"> 
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-body text-center p-3">
+                    <div class="delete-icon-wrapper mb-3">
+                        <i class="bi bi-exclamation-circle text-danger"></i>
+                    </div>
+                    
+                    <h5 class="fw-bold mb-2">Confirm Cancel</h5>
+                    <p class="text-muted mb-0">Are you sure you want to cancel</p>
+                    <p class="fw-bold text-dark" v-if="appointToBeCanceled">{{ appointToBeCanceled }}?</p>
+                    <small class="text-secondary d-block mt-2">This action cannot be undone.</small>
+                </div>
+                
+                <div class="modal-footer border-0 d-flex justify-content-center pb-4">
+                    <button type="button" class="btn px-4 mx-2 rounded-pill shadow-sm back-btn" data-bs-dismiss="modal">Back</button>
+                    <button @click="changeAppointmentStatus(appointToBeCanceled, 'canceled')" type="button" class="btn px-4 mx-2 rounded-pill shadow-sm cancel-btn" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Treatment Data Modal -->
+        <div class="modal fade" id="treatmentDataModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg"> 
+            <div class="modal-content border-1 shadow-lg" v-if="treatmentData">
+                <div class="modal-header">
+                    <h5 class="modal-title h5 fw-bold mb-0" style="color: #220349;">Treatment Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div v-if="treatmentDataLoading" class="modal-body text-center p-3">
+                    <div class="text-center p-4">
+                        <div class="spinner-border spinner-border-sm me-2"></div> Loading...
+                    </div>
+                    
+                </div>
+
+                <div v-else-if="treatmentDataError" class="modal-body text-center p-3">
+                    <p class="text-danger fw-medium p-4">{{ treatmentDataError }}</p>
+                </div>
+
+                <div v-else class="modal-body p-3">
+                    <div class="row g-2">
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label fw-bold small highlight-text">Appointment ID</label>
+                            <input :value="treatmentData.appointment_public_id" type="text" class="form-control fw-bold input-fields" style="border: 1px solid #b59ff3" 
+                            disabled>
+                        </div>
+                        <div class="col-md-5 mb-2">
+                            <label class="form-label fw-bold small highlight-text">Doctor Name</label>
+                            <input :value="ap_doc_name" type="text" class="form-control fw-semibold input-fields" 
+                            style="border: 1px solid #b59ff3" disabled>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="form-label fw-bold small highlight-text">Visit Type</label>
+                            <input :value="treatmentData.visit_type" type="text" class="form-control fw-semibold input-fields" 
+                            style="border: 1px solid #b59ff3" disabled>
+                        </div>
+
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label fw-bold small highlight-text">Tests Done</label>
+                            <textarea :value="treatmentData.test_done" type="text" class="form-control text-primary fw-semibold input-fields" rows="3"
+                            disabled></textarea>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label fw-bold small highlight-text">Diagnosis</label>
+                            <textarea :value="treatmentData.diagnosis" type="text" class="form-control text-danger fw-semibold input-fields" rows="3"
+                            disabled></textarea>
+                        </div>
+                        
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label fw-bold small highlight-text">Medicines</label>
+                            <textarea :value="treatmentData.medicine" type="text" class="form-control text-success fw-semibold input-fields" rows="3"
+                            disabled></textarea>
+                        </div>
+
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label fw-bold small highlight-text">Prescription</label>
+                            <textarea :value="treatmentData.prescription" type="text" class="form-control text-muted fw-semibold input-fields" rows="3"
+                            disabled></textarea>
+                        </div>
+
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold small highlight-text">Notes</label>
+                            <textarea :value="treatmentData.notes" type="text" class="form-control text-muted fw-semibold input-fields" rows="3"
+                            disabled></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer border-0 d-flex justify-content-center pb-2">
+                        <button type="button" class="btn px-4 mx-2 rounded-pill shadow-sm back-btn" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -251,19 +424,75 @@ const refreshAppointments = () => {
     font-weight: 700;
 }
 
-.view-treatment-btn{
+.cancel-appointment-btn{
     align-items: center;
-    background: linear-gradient(135deg,#8f6ec7ee, #724ebbec, #5c3ca1e8); 
+    background: linear-gradient(135deg,#c77e7eee, #bb4e4eec, #a13c3ce8); 
     color: white;
-    border: 1px solid gray;
+    border: 1px solid rgb(150, 149, 149);
     border-radius: 8px;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
+    min-width: 145px;
+}
+.cancel-appointment-btn:hover{
+    background: linear-gradient(135deg,#dd9696f3, #d37070f3, #b16363f3);
+    color:white;
+    border: 1px solid rgb(131, 130, 130);
+}
+.view-treatment-btn{
+    align-items: center;
+    background: linear-gradient(135deg,#8d88cfee, #4e50bbec, #3e3ca1e8); 
+    color: white;
+    border: 1px solid rgb(136, 135, 135);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 145px;
 }
 .view-treatment-btn:hover{
-    background: linear-gradient(135deg,#ab8fe7f8, #9170d3, #7f63b1);
+    background: linear-gradient(135deg,#9697ddf6, #7a70d3f6, #6364b1f6);
     color:white;
+    border: 1px solid rgb(131, 130, 130);
+}
+
+.reschedule-appointment-btn{
+    align-items: center;
+    background: linear-gradient(135deg,#479481ee, #297260ec, #225e57e8); 
+    color: white;
+    border: 1px solid rgb(163, 162, 162);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 145px;
+}
+.reschedule-appointment-btn:hover{
+    background: linear-gradient(135deg,#58ac97ee, #31816dec, #276860e8);
+    color:white;
+    border: 1px solid rgb(131, 130, 130);
+}
+
+.reschedule-appointment-btn:disabled{
+    background: #15685391;
+    color:white;
+    border: 1px solid rgb(131, 130, 130);
+}
+
+.input-fields {
+    background-color: #f3f6fa;
+    border: 1px solid #cee3fc;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+.input-fields:disabled{
+    background-color: #f8fcfb;
+    border: 1px solid #bdd5f1;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    transition: all 0.2s ease;
 }
 
 .spec-tag {
@@ -308,6 +537,35 @@ const refreshAppointments = () => {
 }
 .week-badge-bg{
   background-color: #012c55c2;
+}
+
+.back-btn{
+    background:#eaeafa;
+    color: rgb(23, 2, 2);
+    border: 1px solid rgb(154, 153, 153);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.back-btn:hover{
+    background:#e2e2fa;
+    border: 1px solid rgb(116, 115, 115);
+}
+
+.cancel-btn {
+    align-items: center;
+    background: #cc3d33; 
+    color: white;
+    border: 1px solid gray;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.cancel-btn:hover {
+    background: #b93030;
+    color:white;
 }
 
 </style>

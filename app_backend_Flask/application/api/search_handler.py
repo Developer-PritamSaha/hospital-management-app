@@ -24,7 +24,7 @@ class AdminSearchAppointments(Resource):
             if duration not in ['previous', 'current-week', 'all']:
                 raise ValueError("'duration' parameter can only have value 'all' or 'current-week' or 'previous'.")
         except ValueError as e:
-            abort(400, message=e)
+            abort(400, message=str(e))
 
         try:
             search_str = non_empty_string(request.args.get("query"))
@@ -448,7 +448,7 @@ class DoctorSearchAppointments(Resource):
             if duration not in ['history', 'current-week', 'all']:
                 raise ValueError("'duration' parameter can only have value 'all' or 'current-week' or 'history'.")
         except ValueError as e:
-            abort(400, message=e)
+            abort(400, message=str(e))
 
         try:
             search_str = non_empty_string(request.args.get("query"))

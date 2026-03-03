@@ -184,7 +184,7 @@ class DoctorRegistration(Resource):
 
             Availability.create_default_availability(new_doctor_data.id)
             
-            save_credentials(args["email"],args["password"],f'./doctor_credentials/{doc_public_id}_cred.txt',f"[ {args["full_name"].title().replace(" ","_")} ({doc_public_id}) ] doctor's")
+            save_credentials(args["email"],args["password"],f'./doctor_credentials/{doc_public_id}_cred.txt',f'[ {args["full_name"].title().replace(" ","_")} ({doc_public_id}) ] doctor')
             
         except Exception as e:
             db.session.rollback()

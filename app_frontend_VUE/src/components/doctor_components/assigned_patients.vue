@@ -130,7 +130,7 @@ const refreshPatients = () => {
                                 <th class="text-center">Age</th>
                                 <th class="text-center">Height (cm.)</th>
                                 <th class="text-center">Weight (kg.)</th>
-                                <th class="text-center">History</th>
+                                <th class="text-center">Medical History</th>
                             </tr>
                         </thead>
 
@@ -169,13 +169,16 @@ const refreshPatients = () => {
 
                                 <td class="text-center">
                                     <div>
-                                        <router-link to="/dashboard/doctor/patient-history"><button 
-                                        @click="viewPatientMedicalHistory(patient.patient_public_id)" class="border-0 btn" title="View Records">
-                                            <div class="records-pill active">
-                                                <i class="bi bi-clipboard-data pe-1"></i>
-                                                View Records
-                                            </div>
-                                        </button></router-link>
+                                        <router-link to="/dashboard/doctor/patient-history">
+                                            <button 
+                                            @click="viewPatientMedicalHistory(patient.patient_public_id)" type="button" class="view-records-btn px-4 rounded-pill btn" 
+                                            title="View Records">
+                                                <div >
+                                                    <i class="bi bi-clipboard-data pe-1"></i>
+                                                    View Records
+                                                </div>
+                                            </button>  
+                                        </router-link>
                                     </div>
                                 </td>
 
@@ -230,18 +233,21 @@ const refreshPatients = () => {
     font-weight: 700;
 }
 
-.records-pill {
-    padding: 9px 14px;
-    border-radius: 25px;
-    font-size: 0.8rem;
-    font-weight: 500;
+.view-records-btn{
+    align-items: center;
+    background: linear-gradient(135deg,#479481ee, #297260ec, #225e57e8); 
+    color: white;
+    border: 1px solid rgb(163, 162, 162);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 145px;
 }
-
-.records-pill.active {
-    background-color: #e2ffd5;
-    color: #387507;
-    border-style: solid;
-    border-color: #29aa1b;
+.view-records-btn:hover{
+    background: linear-gradient(135deg,#58ac97ee, #31816dec, #276860e8);
+    color:white;
+    border: 1px solid rgb(131, 130, 130);
 }
 
 .count-bg{
