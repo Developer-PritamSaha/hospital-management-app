@@ -221,6 +221,8 @@ class PatientBookAppointment(Resource):
                         # If the availability date is already passed from the current date
                         if current_datetime.date() > a.date:
                             slot_availability = False
+                        elif (current_datetime.date() == a.date) and (current_datetime.time() > a.start_time):
+                            slot_availability = False
 
                         if index_count not in temp:
                             temp = {

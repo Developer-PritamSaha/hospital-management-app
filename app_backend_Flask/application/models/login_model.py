@@ -15,6 +15,7 @@ class User(db.Model):
     patient = db.relationship('Patient', backref='user', cascade="all, delete-orphan")
     doctor = db.relationship('Doctor', backref='user', cascade="all, delete-orphan")
     user_token = db.relationship('User_Tokens', backref='user', cascade="all, delete-orphan")
+    notification = db.relationship('Notification', backref='user', cascade="all, delete-orphan")
 
     @classmethod
     def create_admin(cls):

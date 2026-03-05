@@ -22,12 +22,18 @@ def build_frontend_dist(dir:str="./app_frontend_VUE", rebuild:bool=False, build:
                 app.logger.info("Frontend dist build completed successfully")
                 print(f">> Frontend dist build completed successfully within {time_taken:.3f} sec.")
             except subprocess.CalledProcessError as e:
+                print("\n[!] Frontend dist build failed..")
                 raise Exception(f"Frontend dist build failed: {e}")
+            except FileNotFoundError:
+                print("\n[!] Frontend dist build failed..")
+                raise Exception("'npm' subprocess execution failed. NodeJs and npm not installed properly.")
+
         else:
             print(">> Frontend initialized successfully...")
             app.logger.info("Frontend distribution already exists. Skipping build.")
 
 def is_redis_active(host="localhost", port="6379"):
+    '''This function checks for the redis server is active or not'''
     try:
         r = Redis(host=host, port=port, socket_connect_timeout=1)
         return r.ping()  # Returns True if it gets a PONG

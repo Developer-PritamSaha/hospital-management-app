@@ -1,5 +1,6 @@
 from celery import Celery, Task
-from celery.schedules import crontab
+from celery.schedules import crontab 
+from datetime import date, time, timedelta
 
 def init_celery_app(app):
     celery = Celery(
@@ -14,17 +15,31 @@ def init_celery_app(app):
         result_serializer = 'json'
     )
 
-    # ## Celery cron jobs
-    # celery.conf.beat_schedule = {
-    #     "auto-assign-weekly-availability": {
-    #         "task": "app_backend_Flask.application.celery_tasks.auto_assign_weekly_availability",
-    #         "schedule": crontab(hour=0, minute=0, day_of_week=1),  # Every Monday midnight
-    #     },
-    #     "weekly-admin-report": {
-    #         "task": "app_backend_Flask.application.celery_tasks.weekly_admin_report",
-    #         "schedule": crontab(hour=8, minute=0, day_of_week=1),  # Monday 8 AM
-    #     },
-    # }
+    # Clear out task results from redis result backend after 30 min.
+    celery.conf.result_expires = 1800
+
+    ## Celery cron jobs
+    celery.conf.beat_schedule = {
+        "auto-assign-doctor-weekly-availability": {
+            "task": "app_backend_Flask.application.celery_tasks.reset_doctor_weekly_availability",
+            "schedule": crontab(hour=0, minute=0, day_of_week=1),  # Every Monday midnight
+        },
+        "cancel_pending_appointment_slot1": {
+            "task": "app_backend_Flask.application.celery_tasks.cancel_pending_appointments",
+            "schedule": crontab(hour=12, minute=0),  # after 12:00 PM 
+            "args": ("12:00",)
+        },
+        "cancel_pending_appointment_slot2": {
+            "task": "app_backend_Flask.application.celery_tasks.cancel_pending_appointments",
+            "schedule": crontab(hour=17, minute=0),  # after 5:00 PM 
+            "args": ("17:00",)
+        },
+        "cancel_pending_appointment_slot3": {
+            "task": "app_backend_Flask.application.celery_tasks.cancel_pending_appointments",
+            "schedule": crontab(hour=22, minute=0),  # after 10:00 PM 
+            "args": ("22:00",)
+        },
+    }
 
     class ContextTask(Task):
         def __call__(self, *args, **kwargs):

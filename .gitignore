@@ -9,4 +9,5 @@ celerybeat-schedule*
 *.venv
 *.vscode
 *.db
+*.csv
 docs/project_guides

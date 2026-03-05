@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted, inject} from "vue";
 import axios_instance from "@/axiosSetup";
-import router from "@/router";
 import { useGlobalTemp } from '@/stores/temp_data';
 
 const globalTemp = useGlobalTemp()

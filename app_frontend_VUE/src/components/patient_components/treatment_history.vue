@@ -1,9 +1,10 @@
 <script setup>
-import { ref, onMounted} from "vue";
+import { ref, onMounted, inject} from "vue";
 import axios_instance from "@/axiosSetup";
 import { useGlobalTemp } from '@/stores/temp_data';
 
 const globalTemp = useGlobalTemp()
+const triggerAlert = inject('triggerChildAlert')
 
 const data = ref({
     patient_name: null,
@@ -122,31 +123,90 @@ async function loadTreatmentData(ap_pub_id, doc_name) {
     }
 }
 
-async function requestDataExport(pat_pub_id) {
-    // treatmentData.value = "Empty"
-    // treatmentDataLoading.value = true
-    // treatmentDataError.value = null
-    // try {
-    //     const response = await axios_instance.get("/api/dashboard/patient/appointment-treatment",{
-    //         params: {
-    //             "appointment_public_id": ap_pub_id
-    //         }
-    //     })
-    //     if (response?.data.status === "available"){
-    //         treatmentData.value = response?.data
-    //         ap_doc_name.value = doc_name
-    //     }
-    //     else{
-    //         treatmentDataError.value = "Treatment Data Unavailable."
-    //     }
-            appendAlert(`${pat_pub_id} Appointment Medical History export started.`, "info", "bi-check-circle")
-    // } catch (err) {
-    //     treatmentDataError.value = err.response?.data?.message || err.message
+// Handle Csv Export
+const exportRequest = ref(null);
+const pollingActive = ref(false);
+
+async function requestDataExport() {
+    try {
+        // 1. Trigger the POST request
+        const response = await axios_instance.post("/api/dashboard/patient/export-csv");
+        const taskId = response.data?.task_id;
         
-    // } finally {
-    //     treatmentDataLoading.value = false
-    // }
+        localStorage.setItem("task_id", taskId);
+        appendAlert("Appointment Medical History export started.", "info", "bi-check-circle");
+        
+        exportRequest.value = "pending";
+        
+        // 2. Start the Polling process
+        startPolling(taskId);
+
+    } catch (err) {
+        const e = err.response?.data?.message || err.message;
+        if (err.response?.status === 404) {
+            appendAlert("No medical history available to be exported.", "warning", "bi-patch-exclamation");
+        } else {
+            appendAlert(e, "danger", "bi-exclamation-triangle");
+        }
+    }
 }
+
+async function startPolling(taskId) {
+    if (pollingActive.value) return; 
+    pollingActive.value = true;
+
+    const poll = async () => {
+        try {
+            // Match your Flask GET method: uses query params (?task_id=...)
+            const res = await axios_instance.get("/api/dashboard/patient/export-csv", {
+                params: { task_id: taskId }
+            });
+            
+            const status = res.data.status;
+
+            if (status === 'success') {
+                exportRequest.value = "success";
+                pollingActive.value = false;
+                triggerAlert("Export completed!", "success", "bi-check-circle");
+                
+                // Optional: Automatically trigger download if file_path is provided
+                if (res.data.file_path) {
+                    downloadFile(res.data.file_path);
+                }
+            } 
+            else if (status === 'failed' || status === 'failure') {
+                exportRequest.value = "error";
+                pollingActive.value = false;
+                triggerAlert("Export failed. Please try again later.", "danger", "bi-x-circle");
+            } 
+            else {
+                // Task is still 'pending', 'started', or 'retry'
+                // Poll again after 3 seconds
+                setTimeout(poll, 3000);
+            }
+        } catch (err) {
+            // Handle 400 or 500 errors from your Flask 'get' method
+            const errorMsg = err.response?.data?.message || "Polling failed.";
+            triggerAlert(errorMsg, "danger", "bi-exclamation-triangle");
+            pollingActive.value = false;
+        }
+    };
+
+    setTimeout(poll, 3000) 
+}
+
+// Helper to handle the actual file download
+function downloadFile(filePath) {
+    // If your backend serves static files, you can redirect or use a blob
+    // For a Hospital system, usually this would be a secure signed URL
+    const link = document.createElement('a');
+    link.href = filePath; 
+    link.setAttribute('download', 'Medical_History.csv');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+}
+
 
 onMounted(() => {
     if(globalTemp.get('searchResource') === 'history'){
@@ -182,7 +242,7 @@ const refreshData = () => {
                     </button>
                 </div>
                 
-                <button @click="requestDataExport(data.patient_pub_id)" type="button" title="Export CSV" class="btn px-4 rounded-pill export-btn">
+                <button @click="requestDataExport" type="button" title="Export CSV" class="btn px-4 rounded-pill export-btn">
                     <div>
                         <i class="bi bi-download fs-6 pe-1 "></i>
                         Export CSV

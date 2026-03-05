@@ -117,7 +117,7 @@ const refreshData = () => {
                         </button>
                     </router-link>
 
-                   <h2 class="h4 fw-bold" style="color: #220349;">[{{ data.patient_name }}] Medical History</h2> 
+                   <h2 class="h4 fw-bold" style="color: #220349;">{{ data.patient_name }}'s Medical History</h2> 
                    
                     <button class="btn btn-sm border-0 text-primary" 
                     @click="refreshData" v-if="!data.isLoading" title="Refresh">

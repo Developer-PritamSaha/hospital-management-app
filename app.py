@@ -146,7 +146,7 @@ api.add_resource(PatientAppointmentHistory, "/api/dashboard/patient/appointment-
 api.add_resource(PatientTreatmentData, "/api/dashboard/patient/appointment-treatment")
 
 ## Celery job APIs
-api.add_resource(TestJob,"/api/test-job")
+api.add_resource(ExportCsvReport,"/api/dashboard/patient/export-csv")
 
 
 if __name__ == '__main__':
@@ -171,7 +171,7 @@ if __name__ == '__main__':
     start_celery_workers_beats()
 
     # Build frontend distribution
-    build_frontend_dist(build=True, rebuild=True)
+    build_frontend_dist()
 
     init_success = True
 

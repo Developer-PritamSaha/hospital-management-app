@@ -1,7 +1,3 @@
-# hospital_management_v2
-Hospital Management System (HMS) web application will allow efficient management of patients, doctors, appointments, and treatments.
-
-## Installation and Setup
 ##> To start the application locally you need to have already installed the following in your system(Linux):
     1. Python(3.10+) -> Linux systems already comes with pre-installed python, check (python3 --version) 
     2. Node(24.14.0 LTS) -> https://nodejs.org/en/download
@@ -46,3 +42,7 @@ http://localhost:6379/ - redis server
 http://localhost:5173/ - vue frontend 
 http://localhost:1025/ - mailhog smtp server
 http://localhost:8025/ - mailhog email ui
+
+
+
+

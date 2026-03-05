@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 
 from ..extensions import db
 from app_backend_Flask.application.models import *
+from app_backend_Flask.application import celery_tasks
 from ..utils.input_validators import *
 
 ## For Doctor Availability Data
@@ -57,7 +58,7 @@ class DoctorDashboard(Resource):
         if not user_exist or not doctor:
             abort(404, message="Doctor not found.")
 
-        is_updated = reset_weekly_dates(doctor.id)
+        # is_updated = reset_weekly_dates(doctor.id)
         
         try:
             return {
@@ -74,7 +75,7 @@ class DoctorDashboard(Resource):
                 'experience': doctor.experience,
                 'description': doctor.description,
                 'contact': doctor.contact,
-                'availability_updated': is_updated
+                # 'availability_updated': is_updated
             }, 200
         
         except Exception as e:
@@ -183,9 +184,9 @@ class DoctorManageAvailability(Resource):
 
         doctor = Doctor.query.filter_by(user_id=int(user_id)).first()
         if not doctor:
-             abort(404, message="Doctor not found.")
+            abort(404, message="Doctor not found.")
             
-        is_updated = reset_weekly_dates(doctor.id)
+        reset_weekly_dates(doctor.id)
         
         try:
             availabilities = Availability.query.filter_by(doctor_id=doctor.id).all()

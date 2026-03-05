@@ -1,5 +1,5 @@
 <script setup>
-    import {ref, watch, onMounted, onUnmounted} from "vue";
+    import {ref, watch, onMounted, onUnmounted, provide} from "vue";
     import axios_instance from "@/axiosSetup";
     import router from "@/router";
     import { useRoute } from 'vue-router';
@@ -10,6 +10,7 @@
     const searchPlaceholder = ref("Search appointments...")
     const routeChangeCounter = ref(0)
     const searchString = ref('')
+    provide('triggerChildAlert', appendAlert)
 
     // Sidebar toggler for both mobile and desktop 
     const isSidebarOpen = ref(true);
