@@ -4,3 +4,4 @@ from .doctor_dashboard import DoctorDashboard, DocStatsCount, DoctorManageAvaila
 from .patient_dashboard import PatientDashboard, PatientAvailableDoctors, PatientBookAppointment, PatientUpcomingAppointments, PatientDepartmentList, PatientAppointmentHistory, PatientTreatmentData
 from .search_handler import AdminSearchAppointments, AdminSearchPatientsData, AdminSearchDoctorsData, DoctorSearchAssignedPatientsData, DoctorSearchAppointments, PatientSearchUpcomingAppointments, PatientSearchDepartments, PatientSearchDepartmentDoctors, PatientSearchAppointmentHistory
 from .celery_jobs_handler import ExportCsvReport
+from .notification_handler import AdminNotifications, PatientNotifications, DoctorNotifications

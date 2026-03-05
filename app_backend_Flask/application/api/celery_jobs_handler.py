@@ -7,6 +7,7 @@ from flask_jwt_extended import get_jwt_identity, get_jwt
 from datetime import datetime, timedelta
 from celery.result import AsyncResult
 
+from ..extensions import db
 from app_backend_Flask.application import celery_tasks
 from app_backend_Flask.application.models import *
 from ..utils.input_validators import *
@@ -21,10 +22,6 @@ class ExportCsvReport(Resource):
         if Roles_Users.user_role(int(user_id)) != "patient":
             abort(401, message="Patient Access needed.")
 
-        patient = Patient.query.filter_by(user_id=int(user_id)).first()
-        if not patient:
-            abort(404, message="Patient not found.")
-
         task_id = request.args.get("task_id")
         try:
             task_id = non_empty_string(task_id, "'task_id' parameter")
@@ -36,6 +33,18 @@ class ExportCsvReport(Resource):
             task = AsyncResult(task_id)
 
             if task.state == "SUCCESS":
+
+                new_notification = Notification(
+                    user_id = int(user_id),
+                    date = datetime.now().date(),
+                    time = datetime.now().time(),
+                    data = "Your medical history export for the completed appointments has been completed.",
+                    type = "info"
+                )
+
+                db.session.add(new_notification)
+                db.session.commit()
+
                 return {
                     "status": task.state.lower(),
                     "file_path": task.result["file_path"]
@@ -50,6 +59,7 @@ class ExportCsvReport(Resource):
                 }, 200
 
         except Exception as e:
+            db.session.rollback()
             app.logger.exception(f"(Resource) ExportCsvReport: 'GET' (triggered) an error: {e}")
             abort(500, message="Export Csv Download Request failed.")
 

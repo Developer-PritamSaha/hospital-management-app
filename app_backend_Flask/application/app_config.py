@@ -22,3 +22,10 @@ class LocalDevConfig(Config):
     PROPAGATE_EXCEPTIONS = True
     CELERY_BROKER_URL = "redis://localhost:6379/1"
     CELERY_RESULT_BACKEND = "redis://localhost:6379/2"
+    MAIL_SERVER = "localhost"
+    MAIL_PORT = 1025
+    MAIL_USE_TLS = False
+    MAIL_USE_SSL = False
+    MAIL_USERNAME = None
+    MAIL_PASSWORD = None
+    MAIL_DEFAULT_SENDER = "noreply@pentaflow.com"

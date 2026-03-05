@@ -1,5 +1,6 @@
 import csv
 from celery import shared_task
+from flask_mail import Message
 from flask import current_app as app
 from datetime import datetime, timedelta
 
@@ -96,9 +97,9 @@ def generate_medical_history_csv(self, pat_id, pat_pub_id):
 
     try:
         with open(file_path, "w", newline="") as file:
-            writer = csv.writer(file)
+            write = csv.writer(file)
 
-            writer.writerow([
+            write.writerow([
                 "Date",
                 "Time_Slot",
                 "Appointment_Id",
@@ -117,7 +118,7 @@ def generate_medical_history_csv(self, pat_id, pat_pub_id):
                 t = Treatment.query.filter_by(appointment_id=ap.id).first()
                 ap_doc = Doctor.query.filter_by(id=ap.doctor_id).first()
                 if t != None:
-                    writer.writerow([
+                    write.writerow([
                         ap.date.strftime("%Y-%m-%d"),
                         ap.start_time.strftime("%H:%M") + " to " + ap.end_time.strftime("%H:%M"),
                         ap.public_id,
@@ -130,7 +131,7 @@ def generate_medical_history_csv(self, pat_id, pat_pub_id):
                         t.medicine.replace("\n" , " and "),
                         t.notes.replace("\n" , " and ")
                     ])
-
+        
     except Exception as e:
         db.session.rollback()
         app.logger.exception(f"(Celery_Task) generate_medical_history_csv(): (triggered) medical history export failed (cause): {e}")
@@ -144,3 +145,45 @@ def generate_medical_history_csv(self, pat_id, pat_pub_id):
             "message": "CSV Export Started.",
             "file_path": file_path
         }
+    
+@shared_task()
+def notify_patient_appointments():
+    '''Notifies the upcoming appointments of the patients in their respective mail'''
+
+    current_date = datetime.now().date()
+    upcoming_appointments = Appointment.query.filter_by(date=current_date, status='booked').all()
+    
+    try:
+        for ap in upcoming_appointments:
+            # Add a notification to the users dashbaord
+            pat = Patient.query.filter_by(id=ap.patient_id).first()
+            doc = Doctor.query.filter_by(id=ap.doctor_id).first()
+            if pat and doc:
+                new_notification = Notification(
+                    user_id = pat.user_id,
+                    date = datetime.now().date(),
+                    time = datetime.now().time(),
+                    data = f'You have {doc.full_name} appointment on {ap.date.strftime("%d/%m/%y")} from {ap.start_time.strftime("%H:%M")} to {ap.end_time.strftime("%H:%M")}',
+                    type = "info"
+                )
+                db.session.add(new_notification)
+                db.session.flush()
+            
+                t = User.user_email(pat.user_id)
+                msg = Message(
+                    subject="Upcoming Appointment Reminder",
+                    recipients=[t[0]]
+                )
+                msg.body = f'''Hello {pat.full_name}, 
+                You have an appointment from {ap.start_time.strftime("%H:%M")} to {ap.end_time.strftime("%H:%M")} today.'''
+                
+                app.extensions["mail"].send(msg)
+                
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.exception(f"(Celery_Task) notify_patient_appointments(): (triggered) booked upcoming notification sending failed (cause): {e}")
+        return False
+    else:
+        db.session.commit()
+        return True

@@ -1,5 +1,6 @@
 import os, sys
-from flask import Flask, jsonify
+from flask import Flask
+from flask_mail import Mail
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
@@ -29,10 +30,12 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
     api = Api(app)
+    mail = Mail(app)
     jwt = JWTManager(app)
     app.app_context().push()
 
     celery = init_celery_app(app)
+    app.extensions["mail"] = mail
 
     return app, api, jwt, celery
 
@@ -145,8 +148,13 @@ api.add_resource(PatientDepartmentList, "/api/dashboard/patient/departments")
 api.add_resource(PatientAppointmentHistory, "/api/dashboard/patient/appointment-history")
 api.add_resource(PatientTreatmentData, "/api/dashboard/patient/appointment-treatment")
 
-## Celery job APIs
+## Celery job API
 api.add_resource(ExportCsvReport,"/api/dashboard/patient/export-csv")
+
+## Notifications APIs
+api.add_resource(AdminNotifications,"/api/dashboard/admin/notifications")
+api.add_resource(DoctorNotifications,"/api/dashboard/doctor/notifications")
+api.add_resource(PatientNotifications,"/api/dashboard/patient/notifications")
 
 
 if __name__ == '__main__':

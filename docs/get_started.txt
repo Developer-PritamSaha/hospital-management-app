@@ -29,7 +29,7 @@
     redis-cli ping
 
 #> Run the test smtp server with ui (mailhog) 
-    docker run -d -p 1025:1025 -p 8025:8025 mailhog/mailhog
+    sudo docker run -d -p 1025:1025 -p 8025:8025 mailhog/mailhog
 
 **Note: 
 1. When the application runs for the first time it will create the frontend distribution by its own using python subprocess to run 'npm' build command. The compiled frontend dist will be then served from the same backend server.

@@ -88,7 +88,7 @@ function appendAlert(message, type, icon) {
     if (alertPlaceholder.value) {
       alertPlaceholder.value.innerHTML = ''
     }
-  }, 5000)
+  }, 4000)
 }
 
 
@@ -124,81 +124,79 @@ async function loadTreatmentData(ap_pub_id, doc_name) {
 }
 
 // Handle Csv Export
-const exportRequest = ref(null);
-const pollingActive = ref(false);
+const exportRequest = ref(false)
+const pollingActive = ref(false)
 
 async function requestDataExport() {
+    if (exportRequest.value){
+        appendAlert("Export request processing.", "warning", "bi-patch-exclamation")
+        return
+    }
+    exportRequest.value = true
+
     try {
-        // 1. Trigger the POST request
-        const response = await axios_instance.post("/api/dashboard/patient/export-csv");
-        const taskId = response.data?.task_id;
+        const response = await axios_instance.post("/api/dashboard/patient/export-csv")
+        const taskId = response.data?.task_id
         
-        localStorage.setItem("task_id", taskId);
-        appendAlert("Appointment Medical History export started.", "info", "bi-check-circle");
+        appendAlert("Appointment medical history export request received.", "info", "bi-check-circle")
         
-        exportRequest.value = "pending";
-        
-        // 2. Start the Polling process
-        startPolling(taskId);
+        pollCsvExport(taskId)
 
     } catch (err) {
-        const e = err.response?.data?.message || err.message;
+        exportRequest.value = false
+        const e = err.response?.data?.message || "Export request failed"
         if (err.response?.status === 404) {
-            appendAlert("No medical history available to be exported.", "warning", "bi-patch-exclamation");
+            appendAlert("No medical history available to be exported.", "warning", "bi-patch-exclamation")
         } else {
-            appendAlert(e, "danger", "bi-exclamation-triangle");
+            appendAlert(e, "danger", "bi-exclamation-triangle")
         }
     }
 }
 
-async function startPolling(taskId) {
-    if (pollingActive.value) return; 
-    pollingActive.value = true;
+async function pollCsvExport(taskId) {
+    if (pollingActive.value) return
+    pollingActive.value = true
+    
+    // 5 seconds delay to simulate the processing
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
-    const poll = async () => {
-        try {
-            // Match your Flask GET method: uses query params (?task_id=...)
-            const res = await axios_instance.get("/api/dashboard/patient/export-csv", {
-                params: { task_id: taskId }
-            });
-            
-            const status = res.data.status;
+    try {
+        const response = await axios_instance.get("/api/dashboard/patient/export-csv", {
+            params: { task_id: taskId }
+        });
+        
+        const status = response.data.status;
 
-            if (status === 'success') {
-                exportRequest.value = "success";
-                pollingActive.value = false;
-                triggerAlert("Export completed!", "success", "bi-check-circle");
-                
-                // Optional: Automatically trigger download if file_path is provided
-                if (res.data.file_path) {
-                    downloadFile(res.data.file_path);
-                }
-            } 
-            else if (status === 'failed' || status === 'failure') {
-                exportRequest.value = "error";
-                pollingActive.value = false;
-                triggerAlert("Export failed. Please try again later.", "danger", "bi-x-circle");
-            } 
-            else {
-                // Task is still 'pending', 'started', or 'retry'
-                // Poll again after 3 seconds
-                setTimeout(poll, 3000);
-            }
-        } catch (err) {
-            // Handle 400 or 500 errors from your Flask 'get' method
-            const errorMsg = err.response?.data?.message || "Polling failed.";
-            triggerAlert(errorMsg, "danger", "bi-exclamation-triangle");
+        if (status === 'success') {
+            exportRequest.value = false;
             pollingActive.value = false;
+            triggerAlert("CSV export completed.", "success", "bi-check-circle");
+            
+            // Trigger download
+            if (response.data.file_path) {
+                downloadFile(response.data.file_path);
+            }
+        } 
+        else if (status === 'failed') {
+            exportRequest.value = false;
+            pollingActive.value = false;
+            triggerAlert("CSV export failed. Please try again.", "danger", "bi-x-circle");
+        } 
+        else {
+            pollingActive.value = false; // retry the polling every 3 seconds if not failed or success
+            setTimeout(() => pollCsvExport(taskId), 3000);
         }
-    };
-
-    setTimeout(poll, 3000) 
+    } catch (err) {
+        const e = err.response?.data?.message || err.message || "CSV export failed. Please try again."
+        triggerAlert(e, "danger", "bi-exclamation-triangle")
+        exportRequest.value = false;
+        pollingActive.value = false;
+    }
+ 
 }
 
-// Helper to handle the actual file download
+// Handle the file download
 function downloadFile(filePath) {
-    // If your backend serves static files, you can redirect or use a blob
-    // For a Hospital system, usually this would be a secure signed URL
     const link = document.createElement('a');
     link.href = filePath; 
     link.setAttribute('download', 'Medical_History.csv');
