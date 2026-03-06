@@ -14,8 +14,6 @@ import logging
 logging.basicConfig(filename='./logs/app.log', level=logging.DEBUG, format=f'%(asctime)s - %(levelname)s - %(name)s : %(message)s')
 
 app = None
-api = None
-jwt = None
 celery = None
 
 def create_app():
@@ -35,127 +33,24 @@ def create_app():
     app.app_context().push()
 
     celery = init_celery_app(app)
+
+    app.extensions["api"] = api
+    app.extensions["jwt"] = jwt
     app.extensions["mail"] = mail
 
-    return app, api, jwt, celery
+    return app, celery
 
 
-app, api, jwt, celery = create_app()
+app, celery = create_app()
 
 CORS(app, resources={r"/api/*": {"origins": "*"}}) ## For dev uses (not recommended, this will expose the api endpoints to any domains)
 
 
-## Imports all the Models so they are loaded 
+## Imports all the database models
 from app_backend_Flask.application.models import *
 
-# JWT error handler
-@jwt.unauthorized_loader
-def missing_token_callback(e):
-    return {
-        "error": "Authorization required",
-        "message": "Missing bearer authorization token in the header."
-    }, 401
-
-@jwt.expired_token_loader
-def expired_token_callback(jwt_header, jwt_payload):
-    token_type = jwt_payload["type"]
-    return {
-        "error": "Token Expired",
-        'message': f"The authorization {token_type} token has been expired."
-    }, 403
-
-@jwt.invalid_token_loader
-def invalid_token_callback(e):
-   return {
-        "error": "Invalid Token",
-        'message': f"The authorization token has: {e}."
-   }, 422
-
-@jwt.token_in_blocklist_loader
-def check_token_validility(jwt_header, jwt_payload):
-    jti = jwt_payload["jti"]
-    token = User_Tokens.query.filter_by(jti=jti).first()
-    if (token == None) or not token.is_valid():
-       return True
-    else:
-       return False
-
-@jwt.revoked_token_loader
-def revoked_token_callback(jwt_header, jwt_payload):
-   token_type = jwt_payload["type"]
-   return{
-      "error": "Token Revoked",
-      "message": f"The authorization {token_type} token has been revoked.",
-   }, 401
-
-## Imports all the API resources so they are loaded 
-from app_backend_Flask.application.api import *
-
-# Import the app index routes and frontend serve route
-from app_backend_Flask.application.index_routes import *
-
-### Adding API resorces to their respective routes
-## Login Registration APIs
-api.add_resource(PatientRegistration, "/api/register/patient")
-api.add_resource(DoctorRegistration, "/api/register/doctor")
-api.add_resource(UserLogin, "/api/login")
-api.add_resource(TokenRefresher, "/api/token/refresh")
-api.add_resource(UserTokenRole, "/api/token/user/role-valid")
-api.add_resource(UserLogout, "/api/logout")
-api.add_resource(UserLogoutEverywhere, "/api/logout/all")
-
-## Search APIs
-api.add_resource(AdminSearchAppointments, "/api/dashboard/admin/appointments/search")
-api.add_resource(AdminSearchPatientsData, "/api/dashboard/admin/patients/search")
-api.add_resource(AdminSearchDoctorsData, "/api/dashboard/admin/doctors/search")
-
-api.add_resource(DoctorSearchAssignedPatientsData, "/api/dashboard/doctor/assigned-patients/search")
-api.add_resource(DoctorSearchAppointments, "/api/dashboard/doctor/appointments/search")
-
-api.add_resource(PatientSearchUpcomingAppointments, "/api/dashboard/patient/upcoming-appointments/search")
-api.add_resource(PatientSearchDepartments, "/api/dashboard/patient/departments/search")
-api.add_resource(PatientSearchDepartmentDoctors, "/api/dashboard/patient/doctor-list/search")
-api.add_resource(PatientSearchAppointmentHistory, "/api/dashboard/patient/appointment-history/search")
-
-## Admin APIs
-api.add_resource(AdminDashboard, "/api/dashboard/admin")
-api.add_resource(AdminAppointments, "/api/dashboard/admin/appointments")
-api.add_resource(AdminPatientsData, "/api/dashboard/admin/patients")
-api.add_resource(AdminPatientAppointmentHistory, "/api/dashboard/admin/patient-appointments")
-api.add_resource(AdminPatientTreatmentData, "/api/dashboard/admin/patient-treatment")
-api.add_resource(AdminDoctorsData, "/api/dashboard/admin/doctors")
-api.add_resource(StatsCount, "/api/dashboard/admin/stats")
-api.add_resource(DepartmentList, "/api/dashboard/admin/departments")
-api.add_resource(SpecializationList, "/api/dashboard/admin/specializations")
-api.add_resource(AdminManageDoctor, "/api/dashboard/admin/doctor")
-api.add_resource(AdminManagePatient, "/api/dashboard/admin/patient")
-
-## Doctor APIs
-api.add_resource(DoctorDashboard, "/api/dashboard/doctor")
-api.add_resource(DocStatsCount, "/api/dashboard/doctor/week-stats")
-api.add_resource(DoctorManageAvailability, "/api/dashboard/doctor/availability")
-api.add_resource(DoctorManageAppointments, "/api/dashboard/doctor/appointments")
-api.add_resource(DoctorAssignedPatient, "/api/dashboard/doctor/assigned-patients")
-api.add_resource(DoctorPatientTreatmentHistory, "/api/dashboard/doctor/patient-history")
-api.add_resource(DoctorPatientAppointmentTreatmentData, "/api/dashboard/doctor/treatment-data")
-
-## Patient APIs
-api.add_resource(PatientDashboard, "/api/dashboard/patient")
-api.add_resource(PatientAvailableDoctors, "/api/dashboard/patient/doctor-list")
-api.add_resource(PatientUpcomingAppointments, "/api/dashboard/patient/upcoming-appointments")
-api.add_resource(PatientBookAppointment, "/api/dashboard/patient/book-appointment")
-api.add_resource(PatientDepartmentList, "/api/dashboard/patient/departments")
-api.add_resource(PatientAppointmentHistory, "/api/dashboard/patient/appointment-history")
-api.add_resource(PatientTreatmentData, "/api/dashboard/patient/appointment-treatment")
-
-## Celery job API
-api.add_resource(ExportCsvReport,"/api/dashboard/patient/export-csv")
-api.add_resource(DownloadCSV,"/api/dashboard/patient/download-csv")
-
-## Notifications APIs
-api.add_resource(AdminNotifications,"/api/dashboard/admin/notifications")
-api.add_resource(DoctorNotifications,"/api/dashboard/doctor/notifications")
-api.add_resource(PatientNotifications,"/api/dashboard/patient/notifications")
+## Imports all the app routes and jwt error handler
+from app_backend_Flask.application.controllers import *
 
 
 if __name__ == '__main__':

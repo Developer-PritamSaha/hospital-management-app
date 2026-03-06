@@ -496,10 +496,12 @@
     .right-toggle.show{
         display: none;
     }
+
     .table-container {
-    background: white;
-    border-radius: 15px;
-    overflow: hidden;
+        background: white;
+        border-radius: 15px;
+        max-height: 300px; 
+        overflow-y: auto;
     }
 
     .table-style {

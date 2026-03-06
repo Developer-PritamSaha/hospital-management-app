@@ -1,6 +1,5 @@
 from celery import Celery, Task
-from celery.schedules import crontab 
-from datetime import datetime
+from celery.schedules import crontab
 
 def init_celery_app(app):
     celery = Celery(

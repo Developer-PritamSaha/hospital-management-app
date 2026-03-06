@@ -26,7 +26,7 @@ def build_frontend_dist(dir:str="./app_frontend_VUE", rebuild:bool=False, build:
                 raise Exception(f"Frontend dist build failed: {e}")
             except FileNotFoundError:
                 print("\n[!] Frontend dist build failed..")
-                raise Exception("'npm' subprocess execution failed. NodeJs and npm not installed properly.")
+                raise Exception("'npm' subprocess execution failed. 'NodeJs' and 'npm' not installed properly.")
 
         else:
             print(">> Frontend initialized successfully...")
