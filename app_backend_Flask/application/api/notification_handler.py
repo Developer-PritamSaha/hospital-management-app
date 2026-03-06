@@ -25,7 +25,7 @@ class AdminNotifications(Resource):
                 notify_data.append(
                     {
                         'id': n.id,
-                        'date': n.date.strftime("%Y-%m-%d"),
+                        'date': n.date.strftime("%d/%m/%y"),
                         'time': n.time.strftime("%H:%M"),
                         'data': n.data,
                         'type': n.type
@@ -87,7 +87,7 @@ class DoctorNotifications(Resource):
                 notify_data.append(
                     {
                         'id': n.id,
-                        'date': n.date.strftime("%Y-%m-%d"),
+                        'date': n.date.strftime("%d/%m/%y"),
                         'time': n.time.strftime("%H:%M"),
                         'data': n.data,
                         'type': n.type

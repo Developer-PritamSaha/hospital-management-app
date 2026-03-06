@@ -143,7 +143,7 @@ const refreshAppointments = () => {
                                         class="img-fluid mb-4" 
                                         style="max-width: 500px; width: 100%;" 
                                         alt="No appointments">
-                                    <small class="fs-6 text-primary fw-medium">No appointments booked yet.</small>
+                                    <small class="fs-6 text-primary fw-medium">No previous appointments available yet.</small>
                                 </div>
                             </td>
                         </tr>

@@ -19,7 +19,7 @@ jwt = None
 celery = None
 
 def create_app():
-    app = Flask(__name__, static_folder="./app_frontend_VUE/dist", static_url_path="")
+    app = Flask(__name__, template_folder="./app_backend_Flask/application/templates", static_folder="./app_frontend_VUE/dist", static_url_path="")
     if os.getenv('ENV', "development") == "production":
       raise Exception("\n>> Currently no production config is setup.")
     else:
@@ -150,6 +150,7 @@ api.add_resource(PatientTreatmentData, "/api/dashboard/patient/appointment-treat
 
 ## Celery job API
 api.add_resource(ExportCsvReport,"/api/dashboard/patient/export-csv")
+api.add_resource(DownloadCSV,"/api/dashboard/patient/download-csv")
 
 ## Notifications APIs
 api.add_resource(AdminNotifications,"/api/dashboard/admin/notifications")

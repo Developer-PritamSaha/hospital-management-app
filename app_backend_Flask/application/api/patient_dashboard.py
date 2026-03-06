@@ -3,7 +3,7 @@ from flask import current_app as app
 from flask_restful import Resource, reqparse
 from flask_restful import abort
 from flask_jwt_extended import jwt_required
-from flask_jwt_extended import get_jwt_identity, get_jwt
+from flask_jwt_extended import get_jwt_identity
 from datetime import datetime, timedelta
 
 from ..extensions import db
@@ -303,6 +303,16 @@ class PatientBookAppointment(Resource):
         if args["slot_date"] > current_week_end_date:
             abort(409, message="Appointment date cannot be in the future.")
 
+        # If the patient already have an upcoming appointment on the same date and time slot
+        appointment_exist = Appointment.query.filter_by(
+            patient_id=patient.id, 
+            date=args["slot_date"], 
+            start_time=args["slot_start_time"],
+            status="booked").first()
+
+        if appointment_exist:
+            abort(409, message="Appointment exist for the selected time slot to another doctor.")
+
         # Checks for current doctor availability before the appointment booking
         doc_availability = Availability.query.filter_by(doctor_id=doctor.id, slot_id=args["slot_id"]).first()
         if doc_availability:
@@ -518,7 +528,7 @@ class PatientAppointmentHistory(Resource):
             abort(404, message="Patient not found.")
 
 
-        appointments = Appointment.query.filter_by(patient_id=patient.id).all()
+        appointments = Appointment.query.filter_by(patient_id=patient.id, status='completed').all()
         
         try:
             pat_appointments_history = []

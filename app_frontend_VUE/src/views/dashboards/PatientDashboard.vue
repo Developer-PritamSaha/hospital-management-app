@@ -11,6 +11,7 @@
     const routeChangeCounter = ref(0)
     const searchString = ref('')
     provide('triggerChildAlert', appendAlert)
+    provide('loadNewNotifications', refreshNotifications)
 
     // Sidebar toggler for both mobile and desktop 
     const isSidebarOpen = ref(true);
@@ -85,6 +86,7 @@
     // Handles Notification Loading
     const notificationLoading = ref(null)
     const notificationDataError = ref(null)
+    const prevNotificationCount = ref(0)
     const notificationCount = ref(0)
     const notifications = ref([])
     async function loadNotifications() {
@@ -105,6 +107,7 @@
     }
 
     function refreshNotifications(){
+        prevNotificationCount.value = notificationCount.value
         loadNotifications()
     }
 
@@ -128,10 +131,9 @@
     }
 
     // refresh notifications every 5 minutes
-    setInterval(() => {
-        loadNotifications()
+    let refreshNotificationInterval = setInterval(() => {
+        refreshNotifications()
     }, 300000)
-
 
 
     onMounted(() => {
@@ -161,6 +163,9 @@
     onUnmounted(() => {
         // Clean up listener to prevent memory leaks
         window.removeEventListener('resize', handleResize);
+
+        // Clear notification refresh interval
+        clearInterval(refreshNotificationInterval)
 
         document.body.style.overflow = ""
         document.body.style.fontFamily = ""
@@ -299,9 +304,9 @@
             </div>
             
             <div class="d-flex align-items-center">
-                <button @click="loadNotifications" class="btn border-0 position-relative me-3" data-bs-toggle="modal" data-bs-target="#notificationDataModal">
+                <button @click="refreshNotifications" class="btn border-0 position-relative me-3" data-bs-toggle="modal" data-bs-target="#notificationDataModal">
                     <i class="bi bi-bell fs-5"></i>
-                    <span class="position-absolute top-25 start-75 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                    <span v-if="prevNotificationCount < notificationCount" class="position-absolute top-25 start-75 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
                 </button>
                 <router-link to="/dashboard/patient/profile" class="profile-link">
                     <div class="d-flex align-items-center border-start ps-3">
@@ -316,75 +321,75 @@
         </header>
 
         <!-- Notification Data Modal -->
-            <div class="modal fade" id="notificationDataModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-top modal-md"> 
-                <div class="modal-content border-1 shadow-lg">
-                    <div class="modal-header" style="background-color: #f9f6ff;">
-                        <div class="d-flex align-items-center">
-                            <h5 class="modal-title h5 fw-bold mb-0">Notifications</h5>
+        <div class="modal fade" id="notificationDataModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-top modal-md"> 
+            <div class="modal-content border-1 shadow-lg">
+                <div class="modal-header" style="background-color: #f9f6ff;">
+                    <div class="d-flex align-items-center">
+                        <h5 class="modal-title h5 fw-bold mb-0">Notifications</h5>
 
-                            <button class="btn btn-sm border-0 text-primary" 
-                            @click="refreshNotifications" v-if="!notificationLoading" title="Refresh">
-                                <i class="bi bi-arrow-clockwise fs-6"></i>
-                            </button>
-                            <button class="btn btn-sm border-0 text-success" v-else title="Loading" style="cursor: not-allowed;">
-                                <i class="bi bi-arrow-repeat fs-6"></i>
-                            </button>
-                        </div>
-                        <button type="button" class="btn-close pe-4" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button class="btn btn-sm border-0 text-primary" 
+                        @click="refreshNotifications" v-if="!notificationLoading" title="Refresh">
+                            <i class="bi bi-arrow-clockwise fs-6"></i>
+                        </button>
+                        <button class="btn btn-sm border-0 text-success" v-else title="Loading" style="cursor: not-allowed;">
+                            <i class="bi bi-arrow-repeat fs-6"></i>
+                        </button>
                     </div>
-                    <div v-if="notificationLoading" class="modal-body text-center p-3" style="background-color: #f9f6ff;">
-                        <div class="text-center p-4">
-                            <div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading...
-                        </div>
+                    <button type="button" class="btn-close pe-4" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div v-if="notificationLoading" class="modal-body text-center p-3" style="background-color: #f9f6ff;">
+                    <div class="text-center p-4">
+                        <div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading...
                     </div>
+                </div>
 
-                    <div v-else-if="notificationDataError" class="modal-body text-center p-3" style="background-color: #f9f6ff;">
-                        <p class="text-danger fw-medium p-4">{{ notificationDataError }}</p>
-                    </div>
+                <div v-else-if="notificationDataError" class="modal-body text-center p-3" style="background-color: #f9f6ff;">
+                    <p class="text-danger fw-medium p-4">{{ notificationDataError }}</p>
+                </div>
 
-                    <div v-else-if="notificationCount == 0" class="modal-body text-center p-3" style="background-color: #f9f6ff;">
-                        <small class="text-secondary fw-medium">No new notification</small>
-                    </div>
+                <div v-else-if="notificationCount == 0" class="modal-body text-center p-3" style="background-color: #f9f6ff;">
+                    <small class="text-secondary fw-medium">No new notification</small>
+                </div>
 
-                    <div v-else class="modal-body p-4" style="background-color: #f9f6ff;">
-                        <div class="row g-2">
-                            <div class="table-container shadow-sm border-1">
-                                <div class="table-responsive">
-                                    <table class="table-style">
-                                        <tbody>
-                                            <tr v-for="(nf) in notifications" :key="nf.id">
-                                                <td>
-                                                    <div class="d-flex flex-column">
-                                                        <small class="text-center text-muted fw-bold">
-                                                            {{ nf.date }}
-                                                        </small>
-                                                        <small class="text-center text-secondary fw-semibold">{{ nf.time }}</small>
-                                                    </div>
-                                                </td>
+                <div v-else class="modal-body p-4" style="background-color: #f9f6ff;">
+                    <div class="row g-2">
+                        <div class="table-container shadow-sm border-1">
+                            <div class="table-responsive">
+                                <table class="table-style">
+                                    <tbody>
+                                        <tr v-for="(nf) in notifications" :key="nf.id">
+                                            <td>
+                                                <div class="d-flex flex-column">
+                                                    <small class="text-center text-muted fw-bold">
+                                                        {{ nf.date }}
+                                                    </small>
+                                                    <small class="text-center text-secondary fw-semibold">{{ nf.time }}</small>
+                                                </div>
+                                            </td>
 
-                                                <td><div class="fw-medium" style="cursor: pointer;color: #6b27d9;">{{ nf.data }}</div></td>
+                                            <td><div class="fw-medium" style="cursor: pointer;color: #6b27d9;">{{ nf.data }}</div></td>
 
-                                                <td>
-                                                    <button class="btn border-0 text-danger fs-6" title="Delete" @click="deleteNotification(nf.id)">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </td>
-                                                
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                            <td>
+                                                <button class="btn border-0 text-danger fs-6" title="Delete" @click="deleteNotification(nf.id)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                            
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
-
-                    <div class="modal-footer border-0" style="background-color: #f9f6ff;">
-                        
-                    </div>
                 </div>
+
+                <div class="modal-footer border-0" style="background-color: #f9f6ff;">
+                    
                 </div>
             </div>
+            </div>
+        </div>
         
         <div class="content-body">
             <router-view :key="routeChangeCounter"></router-view>

@@ -1,6 +1,6 @@
 from celery import Celery, Task
 from celery.schedules import crontab 
-from datetime import date, time, timedelta
+from datetime import datetime
 
 def init_celery_app(app):
     celery = Celery(
@@ -22,7 +22,7 @@ def init_celery_app(app):
     celery.conf.beat_schedule = {
         "auto-assign-doctor-weekly-availability": {
             "task": "app_backend_Flask.application.celery_tasks.reset_doctor_weekly_availability",
-            "schedule": crontab(hour=0, minute=0, day_of_week=1),  # Every Monday midnight
+            "schedule": crontab(hour=0, minute=0, day_of_week=1),  # Every Monday 12:00 AM
             # 'schedule': crontab(minute='*/1') # for testing every 1 minute
         },
         "cancel_pending_appointment_slot1": {
@@ -45,9 +45,14 @@ def init_celery_app(app):
         },
         "notify_booked_patient_appointments": {
             "task": "app_backend_Flask.application.celery_tasks.notify_patient_appointments",
-            "schedule": crontab(hour=8, minute=0)  # every morning 08:00 AM 
-            # 'schedule': crontab(minute='*/2') # for testing every 2 minute
+            "schedule": crontab(hour=7, minute=0)  # every morning 07:00 AM 
+            # 'schedule': crontab(minute='*/1') # for testing every 1 minute
         },
+        "send_monthly_doctor_report": {
+            "task": "app_backend_Flask.application.celery_tasks.send_monthly_report",
+            "schedule": crontab(day_of_month=1,hour=4, minute=0)  # every months 1st day at 04:00 AM 
+            # 'schedule': crontab(minute='*/1') # for testing every 1 minute
+        }
     }
 
     class ContextTask(Task):

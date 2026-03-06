@@ -3,7 +3,7 @@ from flask import current_app as app
 from flask_restful import Resource
 from flask_restful import abort
 from flask_jwt_extended import jwt_required
-from flask_jwt_extended import get_jwt_identity, get_jwt
+from flask_jwt_extended import get_jwt_identity
 from sqlalchemy import or_
 from datetime import datetime, timedelta
 

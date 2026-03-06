@@ -5,6 +5,7 @@ import { useGlobalTemp } from '@/stores/temp_data';
 
 const globalTemp = useGlobalTemp()
 const triggerAlert = inject('triggerChildAlert')
+const refreshNotifications = inject('loadNewNotifications')
 
 const data = ref({
     patient_name: null,
@@ -170,12 +171,11 @@ async function pollCsvExport(taskId) {
         if (status === 'success') {
             exportRequest.value = false;
             pollingActive.value = false;
-            triggerAlert("CSV export completed.", "success", "bi-check-circle");
-            
+            refreshNotifications()
+
             // Trigger download
-            if (response.data.file_path) {
-                downloadFile(response.data.file_path);
-            }
+            downloadFile(taskId);
+
         } 
         else if (status === 'failed') {
             exportRequest.value = false;
@@ -196,13 +196,35 @@ async function pollCsvExport(taskId) {
 }
 
 // Handle the file download
-function downloadFile(filePath) {
-    const link = document.createElement('a');
-    link.href = filePath; 
-    link.setAttribute('download', 'Medical_History.csv');
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+async function downloadFile(taskId) {
+    try {
+        const response = await axios_instance.get("/api/dashboard/patient/download-csv", {
+            params: { task_id: taskId },
+            responseType: 'blob'
+        });
+
+        const csv_report = response.data
+        triggerAlert("CSV export completed.", "success", "bi-check-circle");
+        
+        // Auto trigger the download
+        const url = window.URL.createObjectURL(csv_report)
+        const temp_element = document.createElement("a")
+        temp_element.href = url
+        temp_element.download = "Medical_History.csv"
+
+        document.body.appendChild(temp_element)
+        temp_element.click()
+
+        document.body.removeChild(temp_element);
+        window.URL.revokeObjectURL(url)
+
+    } catch (err) {
+        const e = err.response?.data?.message || err.message || "CSV export failed. Please try again."
+        triggerAlert(e, "danger", "bi-exclamation-triangle")
+        exportRequest.value = false;
+        pollingActive.value = false;
+    }
+    
 }
 
 
@@ -227,18 +249,24 @@ const refreshData = () => {
         <div class="row g-4">
             <div ref="alertPlaceholder"></div>
             <div class="d-flex justify-content-between align-items-center mb-1">
-               <div class="d-flex align-items-center">
-
-                   <h2 class="h4 fw-bold" style="color: #220349;">Appointment Medical History</h2> 
+               
+                    <div class="d-flex align-items-center ">
+                        <div>
+                            <div class="d-flex align-items-center">
+                                <h2 class="h4 fw-bold" style="color: #220349;">Medical History</h2> 
                    
-                    <button class="btn btn-sm border-0 text-primary" 
-                    @click="refreshData" v-if="!data.isLoading" title="Refresh">
-                        <i class="bi bi-arrow-clockwise fs-6"></i>
-                    </button>
-                    <button class="btn btn-sm border-0 text-success" v-else title="Loading" style="cursor: not-allowed;">
-                        <i class="bi bi-arrow-repeat fs-6"></i>
-                    </button>
-                </div>
+                                <button class="btn btn-sm border-0 text-primary" 
+                                @click="refreshData" v-if="!data.isLoading" title="Refresh">
+                                    <i class="bi bi-arrow-clockwise fs-6"></i>
+                                </button>
+                                <button class="btn btn-sm border-0 text-success" v-else title="Loading" style="cursor: not-allowed;">
+                                    <i class="bi bi-arrow-repeat fs-6"></i>
+                                </button>
+                            </div>
+                            <p class="text-muted small mb-0">Completed appointments prescriptions</p>
+                        </div>
+                    </div>
+                   
                 
                 <button @click="requestDataExport" type="button" title="Export CSV" class="btn px-4 rounded-pill export-btn">
                     <div>

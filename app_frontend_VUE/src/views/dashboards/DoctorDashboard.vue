@@ -73,9 +73,66 @@
         }  
     }
 
+
+    // Handles Notification Loading
+    const notificationLoading = ref(null)
+    const notificationDataError = ref(null)
+    const prevNotificationCount = ref(0)
+    const notificationCount = ref(0)
+    const notifications = ref([])
+    async function loadNotifications() {
+        notificationLoading.value = true
+        notificationDataError.value = null
+        try {
+            const response = await axios_instance.get("/api/dashboard/doctor/notifications")
+            notificationCount.value = response.data.count
+            notifications.value = response.data.notifications
+            
+        } catch (err) {
+            notificationCount.value = 0
+            notificationDataError.value = err.response?.data?.message || err.message
+            appendAlert("Notifications loading failed.", "danger", "bi-exclamation-triangle")
+        } finally {
+            notificationLoading.value = false
+        }
+    }
+
+    function refreshNotifications(){
+        prevNotificationCount.value = notificationCount.value
+        loadNotifications()
+    }
+
+    // Handles Notification Delete
+    async function deleteNotification(nf_id) {
+        try {
+            const response = await axios_instance.delete("/api/dashboard/doctor/notifications", 
+                {
+                    params: {
+                        "notification_id": nf_id
+                    }
+                }
+            )
+            
+            // Refresh the notifications
+            loadNotifications()
+
+        } catch (err) {
+            appendAlert("Notification deletion failed.", "danger", "bi-exclamation-triangle")
+        }
+    }
+
+    // refresh notifications every 5 minutes
+    let refreshNotificationInterval = setInterval(() => {
+        refreshNotifications()
+    }, 300000)
+
+
     onMounted(() => {
         // Store the current user common data
         get_user_data()
+
+        // Load Notification
+        loadNotifications()
 
         // Set initial state based on current screen size
         handleResize();
@@ -97,6 +154,9 @@
     onUnmounted(() => {
         // Clean up listener to prevent memory leaks
         window.removeEventListener('resize', handleResize);
+
+        // Clear notification refresh interval
+        clearInterval(refreshNotificationInterval)
 
         document.body.style.overflow = ""
         document.body.style.fontFamily = ""
@@ -162,7 +222,6 @@
             router.push('/dashboard/doctor/appointments/history')
         }
         else if(currentRoutePath.value === '/dashboard/doctor/assigned-patients'){
-            // appendAlert(`Searching for doctor '${searchString.value.trim()}' Successful. In ${currentRoutePath.value}`, "success", "bi-check-circle-fill")
             globalTemp.set('searchResource', 'assigned-patients')
             globalTemp.set('searchQuery', searchString.value.trim())
             routeChangeCounter.value++
@@ -228,9 +287,9 @@
             </div>
             
             <div class="d-flex align-items-center">
-                <button class="btn border-0 position-relative me-3">
+                <button @click="refreshNotifications" class="btn border-0 position-relative me-3" data-bs-toggle="modal" data-bs-target="#notificationDataModal">
                     <i class="bi bi-bell fs-5"></i>
-                    <!-- <span class="position-absolute top-25 start-75 translate-middle p-1 bg-danger border border-light rounded-circle"></span> -->
+                    <span v-if="prevNotificationCount < notificationCount" class="position-absolute top-25 start-75 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
                 </button>
                 <div class="d-flex align-items-center border-start ps-3">
                     <div class="text-end me-2 d-none d-md-block">
@@ -241,6 +300,77 @@
             </div>
         </header>
         
+        <!-- Notification Data Modal -->
+        <div class="modal fade" id="notificationDataModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-top modal-md"> 
+            <div class="modal-content border-1 shadow-lg">
+                <div class="modal-header" style="background-color: #f9f6ff;">
+                    <div class="d-flex align-items-center">
+                        <h5 class="modal-title h5 fw-bold mb-0">Notifications</h5>
+
+                        <button class="btn btn-sm border-0 text-primary" 
+                        @click="refreshNotifications" v-if="!notificationLoading" title="Refresh">
+                            <i class="bi bi-arrow-clockwise fs-6"></i>
+                        </button>
+                        <button class="btn btn-sm border-0 text-success" v-else title="Loading" style="cursor: not-allowed;">
+                            <i class="bi bi-arrow-repeat fs-6"></i>
+                        </button>
+                    </div>
+                    <button type="button" class="btn-close pe-4" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div v-if="notificationLoading" class="modal-body text-center p-3" style="background-color: #f9f6ff;">
+                    <div class="text-center p-4">
+                        <div class="spinner-border spinner-border-sm text-primary me-2"></div> Loading...
+                    </div>
+                </div>
+
+                <div v-else-if="notificationDataError" class="modal-body text-center p-3" style="background-color: #f9f6ff;">
+                    <p class="text-danger fw-medium p-4">{{ notificationDataError }}</p>
+                </div>
+
+                <div v-else-if="notificationCount == 0" class="modal-body text-center p-3" style="background-color: #f9f6ff;">
+                    <small class="text-secondary fw-medium">No new notification</small>
+                </div>
+
+                <div v-else class="modal-body p-4" style="background-color: #f9f6ff;">
+                    <div class="row g-2">
+                        <div class="table-container shadow-sm border-1">
+                            <div class="table-responsive">
+                                <table class="table-style">
+                                    <tbody>
+                                        <tr v-for="(nf) in notifications" :key="nf.id">
+                                            <td>
+                                                <div class="d-flex flex-column">
+                                                    <small class="text-center text-muted fw-bold">
+                                                        {{ nf.date }}
+                                                    </small>
+                                                    <small class="text-center text-secondary fw-semibold">{{ nf.time }}</small>
+                                                </div>
+                                            </td>
+
+                                            <td><div class="fw-medium" style="cursor: pointer;color: #6b27d9;">{{ nf.data }}</div></td>
+
+                                            <td>
+                                                <button class="btn border-0 text-danger fs-6" title="Delete" @click="deleteNotification(nf.id)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                            
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0" style="background-color: #f9f6ff;">
+                    
+                </div>
+            </div>
+            </div>
+        </div>
+
         <div class="content-body">
             <router-view :key="routeChangeCounter"></router-view>
         </div>
@@ -356,5 +486,29 @@
     }
     .right-toggle.show{
         display: none;
+    }
+
+    .table-container {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    }
+
+    .table-style {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table-style tbody td {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f1f3f5;
+        vertical-align: middle;
+        color: #495057;
+        font-size: 0.9rem;
+    }
+
+    .table-style tbody tr:hover {
+        background-color: #f9ffff;
     }
 </style>

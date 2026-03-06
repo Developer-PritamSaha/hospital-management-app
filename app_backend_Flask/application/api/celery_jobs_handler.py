@@ -1,10 +1,10 @@
-from flask import request
+from flask import request, send_file
 from flask import current_app as app
 from flask_restful import Resource, reqparse
 from flask_restful import abort
 from flask_jwt_extended import jwt_required
-from flask_jwt_extended import get_jwt_identity, get_jwt
-from datetime import datetime, timedelta
+from flask_jwt_extended import get_jwt_identity
+from datetime import datetime
 from celery.result import AsyncResult
 
 from ..extensions import db
@@ -47,8 +47,8 @@ class ExportCsvReport(Resource):
 
                 return {
                     "status": task.state.lower(),
-                    "file_path": task.result["file_path"]
                 }, 200
+
             elif task.state == "FAILED":
                 return {
                     "status": task.state.lower(),
@@ -61,7 +61,7 @@ class ExportCsvReport(Resource):
         except Exception as e:
             db.session.rollback()
             app.logger.exception(f"(Resource) ExportCsvReport: 'GET' (triggered) an error: {e}")
-            abort(500, message="Export Csv Download Request failed.")
+            abort(500, message="Export Csv status Request failed.")
 
     @jwt_required()   
     def post(self):
@@ -89,3 +89,43 @@ class ExportCsvReport(Resource):
         except Exception as e:
             app.logger.exception(f"(Resource) ExportCsvReport: 'POST' (triggered) an error: {e}")
             abort(500, message="Export Csv Request failed.")
+
+class DownloadCSV(Resource):
+    '''This resource consist of 'GET' method which checks 'access token' sent by the client and sends the exported csv file'''
+
+    @jwt_required()   
+    def get(self):
+        user_id = get_jwt_identity()
+        
+        if Roles_Users.user_role(int(user_id)) != "patient":
+            abort(401, message="Patient Access needed.")
+
+        task_id = request.args.get("task_id")
+        try:
+            task_id = non_empty_string(task_id, "'task_id' parameter")
+        except ValueError as e:
+            abort(400, message=str(e))
+
+        try:
+
+            task = AsyncResult(task_id)
+
+            if task.state == "SUCCESS":
+
+                csv_file = send_file(
+                    task.result["file_path"], 
+                    mimetype='text/csv',
+                    download_name='Medical_History.csv',
+                    as_attachment=True)
+               
+                return csv_file
+
+            else:
+                return {
+                    "message": "No CSV file exist for the task."
+                }, 400
+
+        except Exception as e:
+            db.session.rollback()
+            app.logger.exception(f"(Resource) DownloadCSV: 'GET' (triggered) an error: {e}")
+            abort(500, message="Export Csv Download Request failed.")
