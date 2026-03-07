@@ -1,5 +1,5 @@
-from ..extensions import db
-from ..utils.generate_credentials_uid import generate_uuid
+from app_backend_Flask.application.db_extensions import db
+from app_backend_Flask.application.utils.generate_credentials_uid import generate_uuid
 
 class Appointment(db.Model):
     __tablename__ = 'appointment'

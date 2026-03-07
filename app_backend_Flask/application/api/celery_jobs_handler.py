@@ -1,16 +1,16 @@
 from flask import request, send_file
 from flask import current_app as app
-from flask_restful import Resource, reqparse
+from flask_restful import Resource
 from flask_restful import abort
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import get_jwt_identity
 from datetime import datetime
 from celery.result import AsyncResult
 
-from ..extensions import db
+from app_backend_Flask.application.db_extensions import db
 from app_backend_Flask.application import celery_tasks
 from app_backend_Flask.application.models import *
-from ..utils.input_validators import *
+from app_backend_Flask.application.utils.input_validators import *
 
 class ExportCsvReport(Resource):
     '''This resource consist of 'GET' & 'POST' method which checks 'access token' sent by the client and handles asynchronus csv export of the patient medical history'''

@@ -1,7 +1,7 @@
-from ..extensions import db
 from flask import current_app as app
 from .login_model import Doctor
 from datetime import date, time, timedelta
+from app_backend_Flask.application.db_extensions import db
 
 class Availability(db.Model):
     __tablename__ = 'availability'

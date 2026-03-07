@@ -6,9 +6,10 @@ from flask_jwt_extended import jwt_required
 from flask_jwt_extended import get_jwt_identity
 from datetime import datetime, timedelta
 
-from ..extensions import db
+from app_backend_Flask.application.db_extensions import db
+from app_backend_Flask.application import data_cache
 from app_backend_Flask.application.models import *
-from ..utils.input_validators import *
+from app_backend_Flask.application.utils.input_validators import *
 
 ## Request Parsers
 
@@ -199,7 +200,8 @@ class PatientBookAppointment(Resource):
              abort(404, message="Doctor not found.")
         
         try:
-            availabilities = Availability.query.filter_by(doctor_id=doctor.id).all()
+
+            availabilities = data_cache.get_doctor_availability(doctor.id)
 
             current_datetime = datetime.now()
             weekday_index = int(current_datetime.strftime("%u")) - 1
@@ -303,16 +305,6 @@ class PatientBookAppointment(Resource):
         if args["slot_date"] > current_week_end_date:
             abort(409, message="Appointment date cannot be in the future.")
 
-        # If the patient already have an upcoming appointment on the same date and time slot
-        appointment_exist = Appointment.query.filter_by(
-            patient_id=patient.id, 
-            date=args["slot_date"], 
-            start_time=args["slot_start_time"],
-            status="booked").first()
-
-        if appointment_exist:
-            abort(409, message="Appointment exist for the selected time slot to another doctor.")
-
         # Checks for current doctor availability before the appointment booking
         doc_availability = Availability.query.filter_by(doctor_id=doctor.id, slot_id=args["slot_id"]).first()
         if doc_availability:
@@ -327,7 +319,17 @@ class PatientBookAppointment(Resource):
             status="booked").first()
         
         if appointment_exist:
-            abort(409, message="Appointment already booked for this week.")
+            abort(409, message="Appointment already booked for this week to the doctor.")
+
+        # If the patient already have an upcoming appointment on the same date and time slot
+        appointment_exist = Appointment.query.filter_by(
+            patient_id=patient.id, 
+            date=args["slot_date"], 
+            start_time=args["slot_start_time"],
+            status="booked").first()
+
+        if appointment_exist:
+            abort(409, message="Appointment booked for the selected time slot to another doctor.")
         
         # If the appointment completed for a selected time slot
         appointment_complete = Appointment.query.filter_by(
@@ -538,10 +540,12 @@ class PatientAppointmentHistory(Resource):
                 if not ap_doc:
                     doc_name = "Unknown"
                     doc_pub_id = "NA"
+                    doc_contact = "N/A"
                     doc_dept = "NA"
                 else:
                     doc_name = ap_doc.full_name
                     doc_pub_id = ap_doc.public_id
+                    doc_contact = ap_doc.contact
                     doc_dept = Departments_Doctors.dept_name(ap_doc.id)
 
                 pat_appointments_history.append(
@@ -549,6 +553,7 @@ class PatientAppointmentHistory(Resource):
                         'appointment_public_id': ap.public_id,
                         'doctor_full_name': doc_name,
                         'doctor_public_id': doc_pub_id,
+                        'doctor_contact': doc_contact,
                         'doctor_department': doc_dept,
                         'date': ap.date.strftime("%Y-%m-%d"),
                         'start_time': ap.start_time.strftime("%H:%M"),

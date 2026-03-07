@@ -5,9 +5,9 @@ from flask_restful import abort
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import get_jwt_identity
 
-from ..extensions import db
+from app_backend_Flask.application.db_extensions import db
 from app_backend_Flask.application.models import Notification, Roles_Users
-from ..utils.input_validators import is_integer
+from app_backend_Flask.application.utils.input_validators import is_integer
 
 class AdminNotifications(Resource):
     '''This resource consist of 'GET' & 'DELETE' method which checks 'access token' sent by the client and handles the patient notifications'''

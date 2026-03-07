@@ -283,6 +283,7 @@ const refreshData = () => {
                             <tr>
                                 <th class="text-center">Appointment Id</th>
                                 <th class="text-center">Doctor Info</th>
+                                <th class="text-center">Doctor Contact</th>
                                 <th class="text-center">Department</th>
                                 <th class="text-center">Date (Y-M-D)</th>
                                 <th class="text-center">Time (24 hr.)</th>
@@ -293,19 +294,19 @@ const refreshData = () => {
 
                         <tbody>
                             <tr v-if="data.isLoading">
-                                <td colspan="7" class="py-5 text-center text-muted">
+                                <td colspan="8" class="py-5 text-center text-muted">
                                     <div class="spinner-border spinner-border-sm me-2"></div> Loading...
                                 </td>
                             </tr>
 
                             <tr v-else-if="data.error">
-                                <td colspan="7" class="py-5 text-center text-danger fw-medium">
+                                <td colspan="8" class="py-5 text-center text-danger fw-medium">
                                     {{ data.error }}
                                 </td>
                             </tr>
 
                             <tr v-else-if="data.apHistCount === 0">
-                                <td colspan="7" class="py-5 text-center text-primary fw-medium">No medical history available.</td>
+                                <td colspan="8" class="py-5 text-center text-primary fw-medium">No medical history available.</td>
                             </tr>
 
                             <tr v-else v-for="(appoint) in data.histories" :key="appoint.appointment_public_id">
@@ -318,6 +319,7 @@ const refreshData = () => {
                                         <small class="text-center text-muted fw-bold">{{ appoint.doctor_public_id }}</small>
                                     </div>
                                 </td>
+                                <td><div class="text-center text-danger fw-medium">+91 {{ appoint.doctor_contact }}</div></td>
                                 <td><div class="text-center spec-tag">{{ appoint.doctor_department }}</div></td>
                                 <td><div class="text-center text-primary fw-medium">{{ appoint.date }}</div></td>
                                 <td><div class="text-center text-success fw-medium">

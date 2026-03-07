@@ -6,7 +6,7 @@ from flask import render_template
 from datetime import datetime, timedelta
 import calendar
 
-from app_backend_Flask.application.extensions import db
+from app_backend_Flask.application.db_extensions import db
 from app_backend_Flask.application.models import *
 
 

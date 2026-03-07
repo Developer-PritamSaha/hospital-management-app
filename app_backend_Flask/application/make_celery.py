@@ -14,7 +14,7 @@ def init_celery_app(app):
         result_serializer = 'json'
     )
 
-    # Clear out task results from redis result backend after 30 min.
+    # Clear out task results from redis result backend after 15 min.
     celery.conf.result_expires = 1800
 
     ## Celery cron jobs

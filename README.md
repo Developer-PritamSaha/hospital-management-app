@@ -19,8 +19,8 @@
 1. **Install Packages for Flask Backend server (Linux)**
 
 ```bash
-    python3 -m venv .venv && source .venv/bin/activate && 
-    pip install -r requirements.txt
+python3 -m venv .venv && source .venv/bin/activate && 
+pip install -r requirements.txt
 ```
 
 2. **Install Packages for Vue Frontend server (Linux)**
@@ -32,39 +32,41 @@ cd app_frontend_VUE && npm install
 > Make sure you are in the project root folder before procceding with the below steps
 1. **To run the application backend server (Linux)**
 ```bash
-    source .venv/bin/activate && python3 app.py
+source .venv/bin/activate && python3 app.py
 ```
 
 2. **To run the application frontend server (Linux)**
 ```bash
-    cd app_frontend_VUE && npm run dev 
+cd app_frontend_VUE && npm run dev 
 ```
 
 3. **Start Redis server (Linux)**
 ```bash
-    sudo systemctl start redis-server
+sudo systemctl start redis-server
 ```
 
 4. **Check redis server is active or not (Linux)**
 ```bash
-    redis-cli ping
+redis-cli ping 
+
+## If the output is 'PONG' then active
 ```
 
 ### ※ Test SMTP Server Setup (Mailhog)
 1. **Start Docker Service and Socket**
 ```bash
-    sudo systemctl start docker.service && 
-    sudo systemctl start docker.socket
+sudo systemctl start docker.service && 
+sudo systemctl start docker.socket
 ```
 
 2. **Check Docker service is active or not and the current running containers**
 ```bash
-    sudo docker ps
+sudo docker ps
 ```
 
 3. **Run the test smtp server with ui (mailhog)**
 ```bash
-    sudo docker run -d -p 1025:1025 -p 8025:8025 mailhog/mailhog
+sudo docker run -d -p 1025:1025 -p 8025:8025 mailhog/mailhog
 ```
 
 ##  Note: 
@@ -72,10 +74,12 @@ cd app_frontend_VUE && npm install
 
 2. I am using 'mailhog' a testing smtp server and for that we need docker services, else docker has not been used anywhere in the project.
 
+3. Celery worker and beat processes are being auto triggered by the python suprocess, so no need to start the processes separately.
+
 ## Ports:
 
 * http://localhost:5080/ - flask backend
 * http://localhost:5173/ - vue frontend
 * http://localhost:6379/ - redis server
 * http://localhost:1025/ - mailhog smtp server
-* http://localhost:8025/ - mailhog email ui
+* http://localhost:8025/ - mailhog email dashboard UI

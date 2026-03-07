@@ -1,8 +1,8 @@
-from ..extensions import db
-from ..utils.generate_credentials_uid import *
 from flask import current_app as app
 from datetime import datetime
 import bcrypt, uuid
+from app_backend_Flask.application.db_extensions import db
+from app_backend_Flask.application.utils.generate_credentials_uid import *
 
 class User(db.Model):
     __tablename__ = 'user'

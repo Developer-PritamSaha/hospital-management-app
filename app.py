@@ -1,14 +1,15 @@
 import os, sys
 from flask import Flask
 from flask_mail import Mail
+from flask_caching import Cache
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 
 from app_backend_Flask.application.app_config import LocalDevConfig
-from app_backend_Flask.application.extensions import db
+from app_backend_Flask.application.db_extensions import db
 from app_backend_Flask.application.make_celery import init_celery_app
-from app_backend_Flask.application.subprocess_starter import *
+from app_backend_Flask.application.utils.subprocess_starter import *
 import logging
 
 logging.basicConfig(filename='./logs/app.log', level=logging.DEBUG, format=f'%(asctime)s - %(levelname)s - %(name)s : %(message)s')
@@ -30,6 +31,7 @@ def create_app():
     api = Api(app)
     mail = Mail(app)
     jwt = JWTManager(app)
+    cache_data = Cache(app)
     app.app_context().push()
 
     celery = init_celery_app(app)
@@ -37,6 +39,7 @@ def create_app():
     app.extensions["api"] = api
     app.extensions["jwt"] = jwt
     app.extensions["mail"] = mail
+    app.extensions["cache_data"] = cache_data
 
     return app, celery
 

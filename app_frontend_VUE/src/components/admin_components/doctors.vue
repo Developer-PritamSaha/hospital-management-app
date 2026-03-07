@@ -131,6 +131,7 @@ async function blockDoctor(doctor) {
         }
 
         doctor.is_active = !doctor.is_active
+        loadDoctors()
 
     } catch (err) {
         if(doctor.is_active){

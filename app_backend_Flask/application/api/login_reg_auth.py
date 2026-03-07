@@ -8,10 +8,10 @@ from flask_jwt_extended import get_jwt, get_jti
 from datetime import datetime, timedelta
 import uuid, bcrypt
 
-from ..extensions import db
+from app_backend_Flask.application.db_extensions import db
 from app_backend_Flask.application.models import *
-from ..utils.input_validators import *
-from ..utils.generate_credentials_uid import *
+from app_backend_Flask.application.utils.input_validators import *
+from app_backend_Flask.application.utils.generate_credentials_uid import *
 
 ## Request Parser setup 
 # For Patient Data
@@ -106,6 +106,8 @@ class PatientRegistration(Resource):
 
             db.session.add(Roles_Users(user_id=new_registration.id,role_id=3))
 
+            app.extensions["cache_data"].delete("patient_cache")
+
         except Exception as e:
             db.session.rollback()
             app.logger.exception(f"(Resource) PatientRegistration: (triggered) new registration commit rollback: (cause) {e}")
@@ -185,6 +187,8 @@ class DoctorRegistration(Resource):
             Availability.create_default_availability(new_doctor_data.id)
             
             save_credentials(args["email"],args["password"],f'./doctor_credentials/{doc_public_id}_cred.txt',f'[ {args["full_name"].title().replace(" ","_")} ({doc_public_id}) ] doctor')
+
+            app.extensions["cache_data"].delete("doctor_cache")
             
         except Exception as e:
             db.session.rollback()

@@ -133,7 +133,8 @@ async function blockPatient(patient) {
         }
 
         patient.is_active = !patient.is_active
-
+        loadPatients()
+        
     } catch (err) {
         if(patient.is_active){
             appendAlert(`${patient.full_name}(${patient.patient_public_id}) blocking failed.`, "danger", "bi-exclamation-triangle")

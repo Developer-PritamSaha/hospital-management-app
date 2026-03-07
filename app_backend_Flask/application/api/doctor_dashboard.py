@@ -6,9 +6,10 @@ from flask_jwt_extended import jwt_required
 from flask_jwt_extended import get_jwt_identity
 from datetime import datetime, timedelta
 
-from ..extensions import db
+from app_backend_Flask.application.db_extensions import db
+from app_backend_Flask.application import data_cache
 from app_backend_Flask.application.models import *
-from ..utils.input_validators import *
+from app_backend_Flask.application.utils.input_validators import *
 
 ## For Doctor Availability Data
 doctorAvailabilityData_validator = reqparse.RequestParser()
@@ -188,7 +189,7 @@ class DoctorManageAvailability(Resource):
         reset_weekly_dates(doctor.id)
         
         try:
-            availabilities = Availability.query.filter_by(doctor_id=doctor.id).all()
+            availabilities = data_cache.get_doctor_availability(doctor.id)
 
             availability_data = []
             index_count = 1
@@ -295,9 +296,13 @@ class DoctorManageAvailability(Resource):
                     availability.status = True
                     db.session.flush()
 
+                app.extensions["cache_data"].delete_memoized(data_cache.get_doctor_availability, doctor.id)
+
             if availability.diagonisis_limit != args["patient_cap"]:
                 availability.diagonisis_limit = args["patient_cap"]
                 db.session.flush()
+
+                app.extensions["cache_data"].delete_memoized(data_cache.get_doctor_availability, doctor.id)
             
         except Exception as e:
             db.session.rollback()

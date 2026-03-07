@@ -64,7 +64,7 @@ async function toggleAvailability(avail_slot) {
         )
         appendAlert("Availability time changes saved.", "success", "bi-check-circle")
         avail_slot.status = !avail_slot.status
-
+        loadAvailabilities()
     } catch (err) {
         appendAlert("Failed to save availability time.", "danger", "bi-exclamation-triangle")
     }
@@ -80,7 +80,7 @@ async function savePatientCap(avail_slot) {
           }
         )
         appendAlert(`Maximum patient count changes saved.`, "success", "bi-check-circle")
-
+        loadAvailabilities()
     } catch (err) {
         appendAlert("Failed to save maximum patient count.", "danger", "bi-exclamation-triangle")
     }

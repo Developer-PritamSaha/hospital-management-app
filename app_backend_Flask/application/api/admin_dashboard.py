@@ -7,9 +7,10 @@ from flask_jwt_extended import get_jwt_identity
 from datetime import datetime, timedelta
 import os
 
-from ..extensions import db
+from app_backend_Flask.application.db_extensions import db
+from app_backend_Flask.application import data_cache
 from app_backend_Flask.application.models import *
-from ..utils.input_validators import *
+from app_backend_Flask.application.utils.input_validators import *
 
 ### Request Parser setup 
 ## For Apponitment Data
@@ -222,7 +223,7 @@ class AdminPatientsData(Resource):
             abort(401, message="Admin Access needed.")
 
         try:
-            patients = Patient.query.all()
+            patients = data_cache.get_all_patients()
 
             patient_data = []
             for p in patients:
@@ -361,7 +362,6 @@ class AdminPatientTreatmentData(Resource):
             app.logger.exception(f"(Resource) AdminPatientTreatmentData: 'GET' (triggered) an error: {e}")
             abort(500, message="Patient Appointment Treatment data fetching failed.")
 
-
 class AdminDoctorsData(Resource):
     '''This resource consist of 'GET' method which checks 'access token' sent by the client and response with the list of all current doctor data'''
     @jwt_required()   
@@ -371,8 +371,8 @@ class AdminDoctorsData(Resource):
             abort(401, message="Admin Access needed.")
 
         try:
-            doctors = Doctor.query.all()
-
+            doctors = data_cache.get_all_doctors()
+            
             doctor_data = []
             for d in doctors:
                 t = User.user_email(d.user_id)
@@ -579,6 +579,8 @@ class AdminManageDoctor(Resource):
                 else:
                     doctor.is_active = True
                     db.session.flush()
+                
+                app.extensions["cache_data"].delete("doctor_cache")
             
         except Exception as e:
             db.session.rollback()
@@ -640,6 +642,8 @@ class AdminManageDoctor(Resource):
             else:
                 raise Exception("Doctor id not found in the departments_doctors joining table.")
             
+            app.extensions["cache_data"].delete("doctor_cache")
+            
         except Exception as e:
             db.session.rollback()
             app.logger.exception(f"(Resource) AdminManageDoctor: 'PATCH' (triggered) an error: {e}")
@@ -681,6 +685,8 @@ class AdminManageDoctor(Resource):
         try:
             db.session.delete(doctor)
             db.session.flush()
+
+            app.extensions["cache_data"].delete("doctor_cache")
 
         except Exception as e:
             db.session.rollback()
@@ -769,6 +775,8 @@ class AdminManagePatient(Resource):
                 else:
                     patient.is_active = True
                     db.session.flush()
+                
+                app.extensions["cache_data"].delete("patient_cache")
             
         except Exception as e:
             db.session.rollback()
@@ -825,6 +833,7 @@ class AdminManagePatient(Resource):
             patient_exist.contact = args["contact"]
             
             db.session.flush()
+            app.extensions["cache_data"].delete("patient_cache")
             
         except Exception as e:
             db.session.rollback()
@@ -860,6 +869,7 @@ class AdminManagePatient(Resource):
         try:
             db.session.delete(patient)
             db.session.flush()
+            app.extensions["cache_data"].delete("patient_cache")
 
         except Exception as e:
             db.session.rollback()

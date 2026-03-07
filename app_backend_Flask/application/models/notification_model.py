@@ -1,4 +1,4 @@
-from ..extensions import db
+from app_backend_Flask.application.db_extensions import db
 
 class Notification(db.Model):
     __tablename__ = 'notification'

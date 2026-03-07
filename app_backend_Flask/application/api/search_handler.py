@@ -8,7 +8,7 @@ from sqlalchemy import or_
 from datetime import datetime, timedelta
 
 from app_backend_Flask.application.models import *
-from ..utils.input_validators import *
+from app_backend_Flask.application.utils.input_validators import *
 
 class AdminSearchAppointments(Resource):
     '''This resource consist of 'GET' method which checks 'access token' sent by the client and response with the respective filtered list of all searched appointments'''
@@ -850,10 +850,15 @@ class PatientSearchAppointmentHistory(Resource):
                 if not ap_doc:
                     doc_name = "Unknown"
                     doc_pub_id = "NA"
+                    doc_contact = "N/A"
                     doc_dept = "NA"
                 else:
                     doc_name = ap_doc.full_name
                     doc_pub_id = ap_doc.public_id
+                    if ap.status != 'completed':
+                        doc_contact = "XXXXXXXXXX"
+                    else:
+                        doc_contact = ap_doc.contact
                     doc_dept = Departments_Doctors.dept_name(ap_doc.id)
 
                 pat_appointments_history.append(
@@ -861,6 +866,7 @@ class PatientSearchAppointmentHistory(Resource):
                         'appointment_public_id': ap.public_id,
                         'doctor_full_name': doc_name,
                         'doctor_public_id': doc_pub_id,
+                        'doctor_contact': doc_contact,
                         'doctor_department': doc_dept,
                         'date': ap.date.strftime("%Y-%m-%d"),
                         'start_time': ap.start_time.strftime("%H:%M"),
