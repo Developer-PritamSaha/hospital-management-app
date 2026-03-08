@@ -1,0 +1,4058 @@
+openapi: 3.0.0
+info:
+  title: HMS-V2-API-Documentation
+  version: 1.0.0
+  description: >-
+    This API documentation will make you famialarize with the overall design of
+    the Hospital Management SYstem application and how to interact with its
+    different resources.
+
+  contact:
+    name: API support - Developer Pritam
+    url: https://github.com/23f1002917
+
+servers:
+  - url: http://127.0.0.1:5080
+
+paths:
+  /api:
+    get:
+      summary: HMS-API
+      responses:
+        '200':
+          description: HMS-API Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 05:40:18 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '57'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Hospital Management System Api is Running.
+        '500':
+          description: HMS-API Failed
+          headers:
+            Server:
+              schema:
+                type: string
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              schema:
+                type: string
+              example: Sun, 08 Mar 2026 05:43:59 GMT
+            Content-Length:
+              schema:
+                type: integer
+              example: '40'
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+              example: '*'
+            Connection:
+              schema:
+                type: string
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: The server faced an error
+      tags:
+        - Index-API
+      description: >-
+        ## Purpose
+
+
+        Health-check / index endpoint for the HMS app. Use this request to
+        verify the API server is reachable and responding.
+
+
+        ## Responses
+
+
+        All possible reponses from this endpoint:
+
+
+        - **200 - OK**.
+            
+        - **500 - Internal Server Error** .
+  /api/login:
+    post:
+      summary: Login Api
+      responses:
+        '200':
+          description: Login Api - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 07:27:45 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '795'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+              example:
+                access_token: >-
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3Mjk1NDg2NSwianRpIjoiOWEzNjlmZjItZDQzNC00ZjljLWI3OWItYjM3ZGVhYzYxODFlIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NzI5NTQ4NjUsImNzcmYiOiJmNzRlYTg3Ny1mZGNlLTQ2ZWQtYmMyNy04M2UzY2NiMmY5M2EiLCJleHAiOjE3NzI5NTU0NjUsInJvbGUiOiJhZG1pbiIsInJlZnJlc2hfanRpIjoiNDI5MjVlYmUtNjYyNi00YWVmLTkwOGMtMDNmMDBmYmFiMjgzIn0.tpcgLKVctmlbPzlT1uLrQdTNARIXkTXaHIYnKhPx6Ao
+                refresh_token: >-
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3Mjk1NDg2NSwianRpIjoiNDI5MjVlYmUtNjYyNi00YWVmLTkwOGMtMDNmMDBmYmFiMjgzIiwidHlwZSI6InJlZnJlc2giLCJzdWIiOiIxIiwibmJmIjoxNzcyOTU0ODY1LCJjc3JmIjoiYzM5N2Y5N2QtN2RhNS00N2M2LWFhYjYtZWM2YWVhN2Q2ZjM1IiwiZXhwIjoxNzc1NTQ2ODY1fQ.hpb77naA-ZKTWscXyeDKopQ0aNnc2Y1rSXE0Lf-3JoY
+        '404':
+          description: Login Api - Not found
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 07:24:31 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '39'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: User do not exist
+      tags:
+        - Login-Registration-Auth-API
+      description: |-
+        ## Purpose
+
+        Sends JWT access and refresh token after a successfull login.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **400 - Bad Request**
+            
+        - **401 - Unauthorized**
+            
+        - **404 - Not Found**
+            
+        - **500 - Internal Server Error**
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                rememberMe:
+                  type: boolean
+            example:
+              email: admin.66e54e@example.com
+              password: 4AF+fdL1
+              rememberMe: true
+  /api/register/patient:
+    post:
+      summary: Patient Resgistration
+      responses:
+        '201':
+          description: Patient Resgistration Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 07:00:47 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '47'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Patient Registration Successful
+        '400':
+          description: Patient Resgistration Bad
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 07:15:20 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '44'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Only JSON data allowed
+        '409':
+          description: Patient Resgistration Conflict
+          headers:
+            Server:
+              schema:
+                type: string
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              schema:
+                type: string
+              example: Sun, 08 Mar 2026 07:12:36 GMT
+            Content-Length:
+              schema:
+                type: integer
+              example: '49'
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+              example: '*'
+            Connection:
+              schema:
+                type: string
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Patient email already exist
+        '500':
+          description: Patient Resgistration Failed
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 07:14:50 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '49'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Patient Registration failed
+      tags:
+        - Login-Registration-Auth-API
+      description: |-
+        ## Purpose
+
+        Registers a new **patient** account in the HMS app.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **201 - Created**
+            
+        - **400 - Bad Request**
+            
+        - **409 - Conflict**
+            
+        - **500 - Internal Server Error**
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+            example: "{\r\n    \"full_name\": \"Dev Pritam\",\r\n    \"email\": \"Prit@example.com\",\r\n    \"password\": \"Pgh56#89\",\r\n    \"contact\": \"1234567809\",\r\n    \"dob\": \"2004-05-09\", //'YYYY-MM-DD'\r\n    \"gender\": \"male\",\r\n    \"height_cm\": 167,\r\n    \"weight_kg\": 100\r\n}"
+  /api/register/doctor:
+    post:
+      summary: Doctor Registration
+      responses:
+        '201':
+          description: Doctor Registration - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 07:31:24 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '52'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Doctor Registration Successful
+        '422':
+          description: Doctor Registration - Invalid Token
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 07:20:45 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '97'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                    format: style
+              example:
+                error: Invalid Token
+                message: 'The authorization token has: Not enough segments.'
+      tags:
+        - Login-Registration-Auth-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        Registers a new doctor account by the admin only in the HMS app.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **201 - Created**
+            
+        - **400 - Bad Request**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **409 - Conflict**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                gender:
+                  type: string
+                license:
+                  type: string
+                qualification:
+                  type: string
+                department_id:
+                  type: integer
+                specialization_id:
+                  type: integer
+                experience:
+                  type: integer
+                description:
+                  type: string
+                contact:
+                  type: string
+                  format: utc-millisec
+            example:
+              full_name: Dr Das
+              email: Das34.hjk@example.com
+              password: dcW8765#
+              gender: Male
+              license: M-786
+              qualification: MBBs
+              department_id: 2
+              specialization_id: 1
+              experience: 80
+              description: >-
+                Dr. Das is a qualified and compassionate General Physician with
+                experience in diagnosing and treating a wide range of acute and
+                chronic medical conditions. They provide comprehensive primary
+                healthcare, focusing on preventive care, accurate diagnosis, and
+                personalized treatment plans.
+              contact: '1234567809'
+  /api/token/refresh:
+    post:
+      summary: Refresh Token API
+      responses:
+        '200':
+          description: Refresh Token API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 08:02:52 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '443'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+              example:
+                access_token: >-
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3Mjk1Njk3MiwianRpIjoiOGFlNTQ3YmYtNGI4ZC00YjU3LWI5ZGYtY2NkOGMwZjQzZDc0IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NzI5NTY5NzIsImNzcmYiOiJkODQxYmY0Ni02ZDA0LTQ5ZTEtYjU2NS01ZmNlNDUwZjYwYWYiLCJleHAiOjE3NzI5NTc1NzIsInJvbGUiOiJhZG1pbiIsInJlZnJlc2hfanRpIjoiNGUyNmVkNWQtZjZkYy00YzYwLTg5ZjQtMDg2YmRlOTU1MjI5In0.pXiam7vgHjiDRbpN9XoaY3R_OYlnPNjSqSd9bBJlYQE
+      tags:
+        - Login-Registration-Auth-API
+      security:
+        - BearerAuth: []
+      description: >-
+        ## Purpose
+
+
+        Refreshes an expired access token after verifying the sent bearer
+        refresh token.
+
+
+        ## Responses
+
+
+        All possible reponses from this endpoint:
+
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/token/user/role-valid:
+    get:
+      summary: User Role API
+      responses:
+        '200':
+          description: User Role API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 08:16:44 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '47'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  role:
+                    type: string
+              example:
+                status: valid
+                role: admin
+      tags:
+        - Login-Registration-Auth-API
+      security:
+        - BearerAuth: []
+      description: >-
+        ## Purpose
+
+
+        Refreshes an expired access token after verifying the sent bearer
+        refresh token.
+
+
+        ## Responses
+
+
+        All possible reponses from this endpoint:
+
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/logout:
+    post:
+      summary: Logout API
+      responses:
+        '200':
+          description: Logout API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 08:18:40 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '45'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Logged out successfully
+      tags:
+        - Login-Registration-Auth-API
+      security:
+        - BearerAuth: []
+      description: >-
+        ## Purpose
+
+
+        Invalidate the access token sent along with its respective refresh
+        token.
+
+
+        ## Responses
+
+
+        All possible reponses from this endpoint:
+
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/logout/all:
+    post:
+      summary: Logout ALL API
+      responses:
+        '200':
+          description: Logout ALL API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 08:22:38 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '56'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Logged out everywhere successfully
+      tags:
+        - Login-Registration-Auth-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        Invalidate all the refresh and access token of the respective user.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/admin:
+    get:
+      summary: Admin Data API
+      responses:
+        '200':
+          description: Admin Data API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 08:29:27 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '119'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                    format: email
+                  is_active:
+                    type: boolean
+                  role:
+                    type: string
+                  name:
+                    type: string
+              example:
+                email: admin.66e54e@example.com
+                is_active: true
+                role: admin
+                name: PentaFlow Admin
+      tags:
+        - Admin-API
+        - Admin-Dashboard-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        Gets the admin data and the account active status.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/admin/stats:
+    get:
+      summary: Stats Count API
+      responses:
+        '200':
+          description: Stats Count API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 08:41:46 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '78'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointment_count:
+                    type: integer
+                  doctor_count:
+                    type: integer
+                  patient_count:
+                    type: integer
+              example:
+                appointment_count: 0
+                doctor_count: 1
+                patient_count: 1
+      tags:
+        - Admin-API
+        - Admin-Dashboard-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        Returns all the current counts of the appointments, doctors, patients.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/admin/departments:
+    get:
+      summary: All Department List API
+      responses:
+        '200':
+          description: All Department List API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 08:44:04 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '4257'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  departments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        type:
+                          type: string
+              example:
+                count: 20
+                departments:
+                  - id: 1
+                    name: Emergency Care
+                    description: >-
+                      The primary, 24/7 point of contact for immediate medical,
+                      accident, or trauma care.
+                    type: essential
+                  - id: 2
+                    name: General Medicine
+                    description: Manages non-surgical diseases and adult health.
+                    type: essential
+                  - id: 3
+                    name: General Surgery
+                    description: >-
+                      Performs routine operations, including appendectomies,
+                      hernia repairs, etc..
+                    type: essential
+                  - id: 4
+                    name: Internal Medicine
+                    description: >-
+                      Focused on the prevention, diagnosis, and treatment of
+                      complex diseases affecting internal organs, without
+                      surgery.
+                    type: essential
+                  - id: 5
+                    name: Obstetrics and Gynaecology
+                    description: >-
+                      Manages pregnancy, childbirth, and female reproductive
+                      health.
+                    type: essential
+                  - id: 6
+                    name: Paediatrics
+                    description: >-
+                      Specializes in the care of infants, children, and
+                      adolescents.
+                    type: essential
+                  - id: 7
+                    name: Orthopaedics
+                    description: >-
+                      Treats injuries and diseases of the musculoskeletal
+                      system.
+                    type: essential
+                  - id: 8
+                    name: Intensive Care Unit (ICU)
+                    description: Provides 24-hour monitoring for critically ill patients.
+                    type: essential
+                  - id: 9
+                    name: Anaesthesiology
+                    description: Provides pain relief and sedation for surgeries.
+                    type: essential
+                  - id: 10
+                    name: Cardiology
+                    description: >-
+                      Deals with diagnosis and treatment of heart and blood
+                      vessel disorders.
+                    type: essential
+                  - id: 11
+                    name: Neurology
+                    description: >-
+                      Focuses on disorders of the brain, spinal cord, and
+                      nervous system.
+                    type: essential
+                  - id: 12
+                    name: Ophthalmology
+                    description: Diagnoses and treats eye diseases and vision disorders.
+                    type: essential
+                  - id: 13
+                    name: ENT (Otolaryngology)
+                    description: >-
+                      Treats conditions related to ear, nose, throat, head, and
+                      neck.
+                    type: essential
+                  - id: 14
+                    name: Dermatology
+                    description: >-
+                      Manages skin, hair, nail disorders, and cosmetic
+                      treatments.
+                    type: normal
+                  - id: 15
+                    name: Diagnostics
+                    description: >-
+                      Supports clinical decisions through imaging and laboratory
+                      investigations.
+                    type: normal
+                  - id: 16
+                    name: Psychiatry & Mental Health
+                    description: >-
+                      Provides diagnosis and treatment of mental and behavioral
+                      disorders.
+                    type: essential
+                  - id: 17
+                    name: Dental
+                    description: >-
+                      Offers preventive and surgical care for oral and dental
+                      health.
+                    type: normal
+                  - id: 18
+                    name: Nephrology & Urology
+                    description: >-
+                      Manages kidney, urinary tract, and male reproductive
+                      health.
+                    type: essential
+                  - id: 19
+                    name: Endocrinology
+                    description: >-
+                      Focuses on hormone-related disorders and metabolic
+                      diseases.
+                    type: normal
+                  - id: 20
+                    name: Rehabilitation & Physiotherapy
+                    description: >-
+                      Helps patients recover physical function after illness or
+                      injury.
+                    type: normal
+      tags:
+        - Admin-API
+        - Admin-Dashboard-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        Returns all available departments list.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/admin/specializations:
+    get:
+      summary: All Specialization List API
+      responses:
+        '200':
+          description: All Specialization List API
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 08:47:32 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '3941'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  specializations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+              example:
+                count: 48
+                specializations:
+                  - id: 1
+                    name: General Physician
+                  - id: 2
+                    name: Gastroenterology
+                  - id: 3
+                    name: Preventive Medicine
+                  - id: 4
+                    name: Cardiology
+                  - id: 5
+                    name: Interventional Cardiology
+                  - id: 6
+                    name: Cardiac Electrophysiology
+                  - id: 7
+                    name: Neurology
+                  - id: 8
+                    name: Neurosurgery
+                  - id: 9
+                    name: Orthopedic Surgery
+                  - id: 10
+                    name: Sports Medicine
+                  - id: 11
+                    name: Joint Replacement
+                  - id: 12
+                    name: General Surgery
+                  - id: 13
+                    name: Laparoscopic Surgery
+                  - id: 14
+                    name: Minimally Invasive Surgery
+                  - id: 15
+                    name: Pediatrics
+                  - id: 16
+                    name: Neonatology
+                  - id: 17
+                    name: Pediatric Intensive Care
+                  - id: 18
+                    name: Obstetrics
+                  - id: 19
+                    name: Gynecology
+                  - id: 20
+                    name: Reproductive Medicine
+                  - id: 21
+                    name: Ophthalmology
+                  - id: 22
+                    name: Cataract & Refractive Surgery
+                  - id: 23
+                    name: ENT
+                  - id: 24
+                    name: Head & Neck Surgery
+                  - id: 25
+                    name: Audiology
+                  - id: 26
+                    name: Dermatology
+                  - id: 27
+                    name: Cosmetology
+                  - id: 28
+                    name: Trichology
+                  - id: 29
+                    name: Radiology
+                  - id: 30
+                    name: Pathology
+                  - id: 31
+                    name: Hematology
+                  - id: 32
+                    name: Psychiatry
+                  - id: 33
+                    name: Clinical Psychology
+                  - id: 34
+                    name: Child & Adolescent Psychiatry
+                  - id: 35
+                    name: General Dentistry
+                  - id: 36
+                    name: Orthodontics
+                  - id: 37
+                    name: Oral & Maxillofacial Surgery
+                  - id: 38
+                    name: Emergency Medicine
+                  - id: 39
+                    name: Trauma Care
+                  - id: 40
+                    name: Pulmonology
+                  - id: 41
+                    name: Nephrology
+                  - id: 42
+                    name: Urology
+                  - id: 43
+                    name: Endocrinology
+                  - id: 44
+                    name: Diabetology
+                  - id: 45
+                    name: Physiotherapy
+                  - id: 46
+                    name: Rehabilitation Medicine
+                  - id: 47
+                    name: Anesthesiology
+                  - id: 48
+                    name: Critical Care Medicine
+      tags:
+        - Admin-API
+        - Admin-Dashboard-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        Returns all available specializations list.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/admin/notifications:
+    get:
+      summary: Notification API
+      responses:
+        '200':
+          description: Notification API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 08:56:23 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '273'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  notifications:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        date:
+                          type: string
+                        time:
+                          type: string
+                          format: style
+                        data:
+                          type: string
+                        type:
+                          type: string
+              example:
+                count: 1
+                notifications:
+                  - id: 1
+                    date: 08/03/26
+                    time: '12:14'
+                    data: >-
+                      All the pending appointments are being auto canceled for
+                      the time slot.
+                    type: info
+      tags:
+        - Admin-API
+        - Admin-Dashboard-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        Returns all the available notifications.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+    delete:
+      summary: Delete Notification API
+      parameters:
+        - name: notification_id
+          in: query
+          schema:
+            type: integer
+          example: '1'
+      responses:
+        '200':
+          description: Delete Notification API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 08:59:04 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '56'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Notification deleted successfully.
+      tags:
+        - Admin-API
+        - Admin-Dashboard-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        Deletes the respective notification.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/admin/doctors:
+    get:
+      summary: All Doctor data API
+      responses:
+        '200':
+          description: All Doctor data API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 09:01:23 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '851'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  doctors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        doctor_id:
+                          type: integer
+                        doctor_public_id:
+                          type: string
+                        user_id:
+                          type: integer
+                        full_name:
+                          type: string
+                        email:
+                          type: string
+                          format: email
+                        is_active:
+                          type: boolean
+                        department:
+                          type: string
+                        specialization:
+                          type: string
+                        gender:
+                          type: string
+                        license:
+                          type: string
+                        qualification:
+                          type: string
+                        experience:
+                          type: integer
+                        description:
+                          type: string
+                        contact:
+                          type: string
+                          format: utc-millisec
+              example:
+                count: 1
+                doctors:
+                  - doctor_id: 1
+                    doctor_public_id: DR5F1E87
+                    user_id: 3
+                    full_name: Dr Das
+                    email: das34.hjk@example.com
+                    is_active: true
+                    department: General Medicine
+                    specialization: General Physician
+                    gender: Male
+                    license: M-786
+                    qualification: MBBS
+                    experience: 80
+                    description: >-
+                      Dr. Das is a qualified and compassionate General Physician
+                      with experience in diagnosing and treating a wide range of
+                      acute and chronic medical conditions. They provide
+                      comprehensive primary healthcare, focusing on preventive
+                      care, accurate diagnosis, and personalized treatment
+                      plans.
+                    contact: '1234567809'
+      tags:
+        - Admin-API
+        - Manage-Doctor-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        Returns all available doctors list.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/admin/doctor:
+    get:
+      summary: Doctor Data API
+      parameters:
+        - name: doctor_id
+          in: query
+          required: false
+          deprecated: false
+          schema: {}
+          example: '1'
+      responses:
+        '200':
+          description: Doctor Data API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 09:04:15 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '651'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  doctor_id:
+                    type: integer
+                  doctor_public_id:
+                    type: string
+                  user_id:
+                    type: integer
+                  full_name:
+                    type: string
+                  email:
+                    type: string
+                    format: email
+                  is_active:
+                    type: boolean
+                  specialization_id:
+                    type: integer
+                  department_id:
+                    type: integer
+                  gender:
+                    type: string
+                  license:
+                    type: string
+                  qualification:
+                    type: string
+                  experience:
+                    type: integer
+                  description:
+                    type: string
+                  contact:
+                    type: string
+                    format: utc-millisec
+              example:
+                doctor_id: 1
+                doctor_public_id: DR5F1E87
+                user_id: 3
+                full_name: Dr Das
+                email: das34.hjk@example.com
+                is_active: true
+                specialization_id: 1
+                department_id: 2
+                gender: male
+                license: M-786
+                qualification: MBBS
+                experience: 80
+                description: >-
+                  Dr. Das is a qualified and compassionate General Physician
+                  with experience in diagnosing and treating a wide range of
+                  acute and chronic medical conditions. They provide
+                  comprehensive primary healthcare, focusing on preventive care,
+                  accurate diagnosis, and personalized treatment plans.
+                contact: '1234567809'
+      tags:
+        - Admin-API
+        - Manage-Doctor-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        Returns the respective doctors data.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+    post:
+      summary: Doctor handle block API
+      responses:
+        '200':
+          description: Doctor handle block API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 09:05:55 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '52'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Doctor unblocked successfully.
+      tags:
+        - Admin-API
+        - Manage-Doctor-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource can block or unblock a doctor.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                doctor_user_id:
+                  type: integer
+                is_active:
+                  type: boolean
+            example:
+              doctor_user_id: 3
+              is_active: true
+    patch:
+      summary: Doctor Edit API
+      responses:
+        '200':
+          description: Doctor Edit API
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 09:12:16 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '49'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Doctor edited successfully.
+      tags:
+        - Admin-API
+        - Manage-Doctor-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource can edit a doctor data.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                doctor_id:
+                  type: string
+                  format: utc-millisec
+                full_name:
+                  type: string
+                gender:
+                  type: string
+                license:
+                  type: string
+                qualification:
+                  type: string
+                department_id:
+                  type: integer
+                specialization_id:
+                  type: integer
+                experience:
+                  type: integer
+                description:
+                  type: string
+                contact:
+                  type: string
+                  format: utc-millisec
+            example:
+              doctor_id: '1'
+              full_name: Dr Das
+              gender: Male
+              license: M-786
+              qualification: MD
+              department_id: 15
+              specialization_id: 33
+              experience: 10
+              description: >-
+                Dr Das is a qualified and compassionate General Physician with
+                experience in diagnosing and treating a wide range of acute and
+                chronic medical conditions. They provide comprehensive primary
+                healthcare, focusing on preventive care, accurate diagnosis, and
+                personalized treatment plans.
+              contact: '8908930127'
+    delete:
+      summary: Doctor Delete API
+      parameters:
+        - name: doctor_user_id
+          in: query
+          required: false
+          deprecated: false
+          schema: {}
+          example: '3'
+      responses:
+        '204':
+          description: Doctor Delete API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 09:14:07 GMT
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+      tags:
+        - Admin-API
+        - Manage-Doctor-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource can delete a doctor.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **204 - No Content**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/admin/patients:
+    get:
+      summary: All Patient data API
+      responses:
+        '200':
+          description: All Patient data API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 09:16:13 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '434'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  patients:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        patient_id:
+                          type: integer
+                        patient_public_id:
+                          type: string
+                        user_id:
+                          type: integer
+                        full_name:
+                          type: string
+                        contact:
+                          type: string
+                          format: utc-millisec
+                        email:
+                          type: string
+                          format: email
+                        is_active:
+                          type: boolean
+                        dob:
+                          type: string
+                          format: date
+                        gender:
+                          type: string
+                        height_cm:
+                          type: integer
+                        weight_kg:
+                          type: integer
+              example:
+                count: 1
+                patients:
+                  - patient_id: 1
+                    patient_public_id: PAA918BA
+                    user_id: 2
+                    full_name: Dev Pritam
+                    contact: '1234567809'
+                    email: prit@example.com
+                    is_active: true
+                    dob: '2004-05-09'
+                    gender: Male
+                    height_cm: 167
+                    weight_kg: 100
+      tags:
+        - Admin-API
+        - Manage-Patient-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource will send all the available patients.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/admin/patient:
+    get:
+      summary: Patient Data API
+      parameters:
+        - name: patient_id
+          in: query
+          required: false
+          deprecated: false
+          schema: {}
+          example: '1'
+      responses:
+        '200':
+          description: Patient Data API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 09:23:38 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '286'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  patient_id:
+                    type: integer
+                  patient_public_id:
+                    type: string
+                  user_id:
+                    type: integer
+                  full_name:
+                    type: string
+                  email:
+                    type: string
+                    format: email
+                  is_active:
+                    type: boolean
+                  gender:
+                    type: string
+                  dob:
+                    type: string
+                    format: date
+                  height_cm:
+                    type: integer
+                  weight_kg:
+                    type: integer
+                  contact:
+                    type: string
+                    format: utc-millisec
+              example:
+                patient_id: 1
+                patient_public_id: PAA918BA
+                user_id: 2
+                full_name: Dev Pritam
+                email: prit@example.com
+                is_active: true
+                gender: male
+                dob: '2004-05-09'
+                height_cm: 167
+                weight_kg: 100
+                contact: '1234567809'
+      tags:
+        - Admin-API
+        - Manage-Patient-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource will send back the respective patient data.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+    post:
+      summary: Patient handle block API
+      responses:
+        '200':
+          description: Patient handle block API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 09:25:52 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '51'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Patient blocked successfully.
+      tags:
+        - Admin-API
+        - Manage-Patient-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource can block or unblock a patient.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **400 - Bad Request**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patient_user_id:
+                  type: integer
+                is_active:
+                  type: boolean
+            example:
+              patient_user_id: 2
+              is_active: false
+    patch:
+      summary: Patient Edit API
+      responses:
+        '200':
+          description: Patient Edit API
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 09:29:08 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '50'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Patient edited successfully.
+      tags:
+        - Admin-API
+        - Manage-Patient-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource can edit respective patient data.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **400 - Bad Request**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                patient_id:
+                  type: integer
+                full_name:
+                  type: string
+                gender:
+                  type: string
+                dob:
+                  type: string
+                  format: date
+                height_cm:
+                  type: integer
+                weight_kg:
+                  type: string
+                  format: utc-millisec
+                contact:
+                  type: string
+                  format: utc-millisec
+            example:
+              patient_id: 1
+              full_name: Priti Saha
+              gender: female
+              dob: '2005-09-16'
+              height_cm: 157
+              weight_kg: '65'
+              contact: '7890654321'
+    delete:
+      summary: Patient Delete API
+      parameters:
+        - name: patient_user_id
+          in: query
+          required: false
+          deprecated: false
+          schema: {}
+          example: '2'
+      responses:
+        '204':
+          description: Patient Delete API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 09:31:50 GMT
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+      tags:
+        - Admin-API
+        - Manage-Patient-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource can delete a respective patient.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **400 - Bad Request**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/admin/appointments:
+    get:
+      summary: Appointments API
+      responses: {}
+      tags:
+        - Admin-API
+        - Appointments API
+      security:
+        - BearerAuth: []
+    patch:
+      summary: Appointments API
+      responses: {}
+      tags:
+        - Admin-API
+        - Appointments API
+      security:
+        - BearerAuth: []
+  /api/dashboard/admin/patient-appointments:
+    get:
+      summary: Patient Appointment History API
+      responses: {}
+      tags:
+        - Admin-API
+        - Appointments API
+      security:
+        - BearerAuth: []
+  /api/dashboard/admin/patient-treatment:
+    get:
+      summary: Patient Treatment Data API
+      responses: {}
+      tags:
+        - Admin-API
+        - Appointments API
+      security:
+        - BearerAuth: []
+  /api/dashboard/admin/doctors/search:
+    get:
+      summary: Search Doctor API
+      parameters:
+        - name: query
+          in: query
+          required: false
+          deprecated: false
+          schema: {}
+          example: Dr
+      responses:
+        '200':
+          description: Search Doctor API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 12:10:06 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '814'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  doctors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        doctor_id:
+                          type: integer
+                        doctor_public_id:
+                          type: string
+                        user_id:
+                          type: integer
+                        full_name:
+                          type: string
+                        email:
+                          type: string
+                          format: email
+                        is_active:
+                          type: boolean
+                        department:
+                          type: string
+                        specialization:
+                          type: string
+                        gender:
+                          type: string
+                        license:
+                          type: string
+                        experience:
+                          type: integer
+                        description:
+                          type: string
+                        contact:
+                          type: string
+                          format: utc-millisec
+              example:
+                count: 1
+                doctors:
+                  - doctor_id: 1
+                    doctor_public_id: DR9E77DC
+                    user_id: 3
+                    full_name: Dr Das
+                    email: das34.hjk@example.com
+                    is_active: true
+                    department: General Medicine
+                    specialization: General Physician
+                    gender: Male
+                    license: M-786
+                    experience: 80
+                    description: >-
+                      Dr. Das is a qualified and compassionate General Physician
+                      with experience in diagnosing and treating a wide range of
+                      acute and chronic medical conditions. They provide
+                      comprehensive primary healthcare, focusing on preventive
+                      care, accurate diagnosis, and personalized treatment
+                      plans.
+                    contact: '1234567809'
+      tags:
+        - Admin-API
+        - Search-APIs
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource searches for doctors.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+
+        - **400 - Not Found**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/admin/patients/search:
+    get:
+      summary: Search Patient API
+      parameters:
+        - name: query
+          in: query
+          required: false
+          deprecated: false
+          schema: {}
+          example: '2004'
+      responses:
+        '200':
+          description: Search Patient API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 12:12:12 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '434'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  patients:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        patient_id:
+                          type: integer
+                        patient_public_id:
+                          type: string
+                        user_id:
+                          type: integer
+                        full_name:
+                          type: string
+                        contact:
+                          type: string
+                          format: utc-millisec
+                        email:
+                          type: string
+                          format: email
+                        is_active:
+                          type: boolean
+                        dob:
+                          type: string
+                          format: date
+                        gender:
+                          type: string
+                        height_cm:
+                          type: integer
+                        weight_kg:
+                          type: integer
+              example:
+                count: 1
+                patients:
+                  - patient_id: 1
+                    patient_public_id: PA34668D
+                    user_id: 2
+                    full_name: Dev Pritam
+                    contact: '1234567809'
+                    email: prit@example.com
+                    is_active: true
+                    dob: '2004-05-09'
+                    gender: Male
+                    height_cm: 167
+                    weight_kg: 100
+      tags:
+        - Admin-API
+        - Search-APIs
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource searches for patients.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **400 - Bad Request**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/admin/appointments/search:
+    get:
+      summary: Appointment Search API
+      parameters:
+        - name: query
+          in: query
+          required: false
+          deprecated: false
+          schema: {}
+          example: Dev
+        - name: duration
+          in: query
+          schema:
+            type: string
+          example: current-week
+      responses:
+        '200':
+          description: Appointment Search API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 12:21:56 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '555'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  week_start_date:
+                    type: string
+                    format: date
+                  week_end_date:
+                    type: string
+                    format: date
+                  appointments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        appointment_public_id:
+                          type: string
+                        patient_public_id:
+                          type: string
+                        patient_full_name:
+                          type: string
+                        doctor_full_name:
+                          type: string
+                        doctor_public_id:
+                          type: string
+                        doctor_department:
+                          type: string
+                        date:
+                          type: string
+                          format: date
+                        start_time:
+                          type: string
+                          format: style
+                        end_time:
+                          type: string
+                        status:
+                          type: string
+              example:
+                count: 1
+                week_start_date: '2026-03-02'
+                week_end_date: '2026-03-08'
+                appointments:
+                  - appointment_public_id: AP664932D5
+                    patient_public_id: PA34668D
+                    patient_full_name: Dev Pritam
+                    doctor_full_name: Dr Das
+                    doctor_public_id: DR9E77DC
+                    doctor_department: General Medicine
+                    date: '2026-03-08'
+                    start_time: '19:00'
+                    end_time: '22:00'
+                    status: booked
+      tags:
+        - Admin-API
+        - Search-APIs
+      security:
+        - BearerAuth: []
+      description: >-
+        ## Purpose
+
+
+        This resource searches for the appointments in the current-week,
+        previous or for all.
+
+
+        ## Responses
+
+
+        All possible reponses from this endpoint:
+
+
+        - **200 - OK**
+            
+        - **400 - Bad Request**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/doctor:
+    get:
+      summary: Doctor Data API
+      responses:
+        '200':
+          description: Doctor Data API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 12:36:36 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '664'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  doctor_public_id:
+                    type: string
+                  full_name:
+                    type: string
+                  email:
+                    type: string
+                    format: email
+                  is_active:
+                    type: boolean
+                  role:
+                    type: string
+                  department:
+                    type: string
+                  specialization:
+                    type: string
+                  qualification:
+                    type: string
+                  gender:
+                    type: string
+                  license:
+                    type: string
+                  experience:
+                    type: integer
+                  description:
+                    type: string
+                  contact:
+                    type: string
+                    format: utc-millisec
+              example:
+                doctor_public_id: DR9E77DC
+                full_name: Dr Das
+                email: das34.hjk@example.com
+                is_active: true
+                role: doctor
+                department: General Medicine
+                specialization: General Physician
+                qualification: MBBS
+                gender: Male
+                license: M-786
+                experience: 80
+                description: >-
+                  Dr. Das is a qualified and compassionate General Physician
+                  with experience in diagnosing and treating a wide range of
+                  acute and chronic medical conditions. They provide
+                  comprehensive primary healthcare, focusing on preventive care,
+                  accurate diagnosis, and personalized treatment plans.
+                contact: '1234567809'
+      tags:
+        - Doctor-API
+        - Doctor-Dashboard-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource send the respective doctor users data.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/doctor/week-stats:
+    get:
+      summary: Stats Count API
+      responses:
+        '200':
+          description: Stats Count API - Success
+          headers:
+            Server:
+              schema:
+                type: string
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              schema:
+                type: string
+              example: Sun, 08 Mar 2026 12:45:00 GMT
+            Content-Length:
+              schema:
+                type: integer
+              example: '82'
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+              example: '*'
+            Connection:
+              schema:
+                type: string
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointment_count:
+                    type: integer
+                  completed_count:
+                    type: integer
+                  canceled_count:
+                    type: integer
+              example:
+                appointment_count: 1
+                completed_count: 0
+                canceled_count: 0
+      tags:
+        - Doctor-API
+        - Doctor-Dashboard-API
+      security:
+        - BearerAuth: []
+      description: >-
+        ## Purpose
+
+
+        Returns all the current weeks counts of the total appointments,
+        completed, canceled.
+
+
+        ## Responses
+
+
+        All possible reponses from this endpoint:
+
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/doctor/notifications:
+    get:
+      summary: Notification API
+      responses:
+        '200':
+          description: Notification API
+          headers:
+            Server:
+              schema:
+                type: string
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              schema:
+                type: string
+              example: Sun, 08 Mar 2026 12:47:51 GMT
+            Content-Length:
+              schema:
+                type: integer
+              example: '44'
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+              example: '*'
+            Connection:
+              schema:
+                type: string
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  notifications:
+                    type: array
+                    items: {}
+              example:
+                count: 0
+                notifications: []
+      tags:
+        - Doctor-API
+        - Doctor-Dashboard-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        Returns all the available notifications.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+    delete:
+      summary: Delete Notification API Copy
+      parameters:
+        - name: notification_id
+          in: query
+          schema:
+            type: integer
+          example: '1'
+      responses:
+        '404':
+          description: Delete Notification API - Not Found
+          headers:
+            Server:
+              schema:
+                type: string
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              schema:
+                type: string
+              example: Sun, 08 Mar 2026 12:49:22 GMT
+            Content-Length:
+              schema:
+                type: integer
+              example: '47'
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+              example: '*'
+            Connection:
+              schema:
+                type: string
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Notification donot exist.
+      tags:
+        - Doctor-API
+        - Doctor-Dashboard-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        Deletes the respective notification.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/doctor/availability:
+    get:
+      summary: Doctor Availability Data API
+      responses:
+        '200':
+          description: Doctor Availability Data API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 12:53:01 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '6016'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  week_start_date:
+                    type: string
+                    format: date
+                  week_end_date:
+                    type: string
+                    format: date
+                  availabilities:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        weekday:
+                          type: string
+                        slots:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              slot_id:
+                                type: string
+                              start_time:
+                                type: string
+                                format: style
+                              end_time:
+                                type: string
+                              diagonisis_limit:
+                                type: integer
+                              status:
+                                type: boolean
+              example:
+                count: 7
+                week_start_date: '2026-03-02'
+                week_end_date: '2026-03-08'
+                availabilities:
+                  - date: '2026-03-02'
+                    weekday: Monday
+                    slots:
+                      - slot_id: d1s1
+                        start_time: '09:00'
+                        end_time: '12:00'
+                        diagonisis_limit: 0
+                        status: false
+                      - slot_id: d1s2
+                        start_time: '14:00'
+                        end_time: '17:00'
+                        diagonisis_limit: 0
+                        status: false
+                      - slot_id: d1s3
+                        start_time: '19:00'
+                        end_time: '22:00'
+                        diagonisis_limit: 20
+                        status: true
+                  - date: '2026-03-03'
+                    weekday: Tuesday
+                    slots:
+                      - slot_id: d2s1
+                        start_time: '09:00'
+                        end_time: '12:00'
+                        diagonisis_limit: 30
+                        status: true
+                      - slot_id: d2s2
+                        start_time: '14:00'
+                        end_time: '17:00'
+                        diagonisis_limit: 0
+                        status: false
+                      - slot_id: d2s3
+                        start_time: '19:00'
+                        end_time: '22:00'
+                        diagonisis_limit: 0
+                        status: false
+                  - date: '2026-03-04'
+                    weekday: Wednesday
+                    slots:
+                      - slot_id: d3s1
+                        start_time: '09:00'
+                        end_time: '12:00'
+                        diagonisis_limit: 0
+                        status: false
+                      - slot_id: d3s2
+                        start_time: '14:00'
+                        end_time: '17:00'
+                        diagonisis_limit: 0
+                        status: false
+                      - slot_id: d3s3
+                        start_time: '19:00'
+                        end_time: '22:00'
+                        diagonisis_limit: 0
+                        status: false
+                  - date: '2026-03-05'
+                    weekday: Thursday
+                    slots:
+                      - slot_id: d4s1
+                        start_time: '09:00'
+                        end_time: '12:00'
+                        diagonisis_limit: 20
+                        status: true
+                      - slot_id: d4s2
+                        start_time: '14:00'
+                        end_time: '17:00'
+                        diagonisis_limit: 0
+                        status: false
+                      - slot_id: d4s3
+                        start_time: '19:00'
+                        end_time: '22:00'
+                        diagonisis_limit: 20
+                        status: true
+                  - date: '2026-03-06'
+                    weekday: Friday
+                    slots:
+                      - slot_id: d5s1
+                        start_time: '09:00'
+                        end_time: '12:00'
+                        diagonisis_limit: 0
+                        status: false
+                      - slot_id: d5s2
+                        start_time: '14:00'
+                        end_time: '17:00'
+                        diagonisis_limit: 10
+                        status: true
+                      - slot_id: d5s3
+                        start_time: '19:00'
+                        end_time: '22:00'
+                        diagonisis_limit: 0
+                        status: false
+                  - date: '2026-03-07'
+                    weekday: Saturday
+                    slots:
+                      - slot_id: d6s1
+                        start_time: '09:00'
+                        end_time: '12:00'
+                        diagonisis_limit: 0
+                        status: false
+                      - slot_id: d6s2
+                        start_time: '14:00'
+                        end_time: '17:00'
+                        diagonisis_limit: 0
+                        status: false
+                      - slot_id: d6s3
+                        start_time: '19:00'
+                        end_time: '22:00'
+                        diagonisis_limit: 0
+                        status: false
+                  - date: '2026-03-08'
+                    weekday: Sunday
+                    slots:
+                      - slot_id: d7s1
+                        start_time: '09:00'
+                        end_time: '12:00'
+                        diagonisis_limit: 30
+                        status: true
+                      - slot_id: d7s2
+                        start_time: '14:00'
+                        end_time: '17:00'
+                        diagonisis_limit: 30
+                        status: true
+                      - slot_id: d7s3
+                        start_time: '19:00'
+                        end_time: '22:00'
+                        diagonisis_limit: 30
+                        status: true
+      tags:
+        - Doctor-API
+        - Manage-Availability-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource sends the doctor availability schedule.
+
+        ## Responses
+
+        All possible reponses from this endpoint:
+
+        - **200 - OK**
+            
+        - **400 - Bad Request**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+    patch:
+      summary: Doctor Availability Update API
+      responses:
+        '200':
+          description: Doctor Availability Update API - Success
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 12:55:49 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '70'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Doctor availability status updated successfully.
+      tags:
+        - Doctor-API
+        - Manage-Availability-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource updates the doctors availability.
+
+        ## Responses
+
+        All possible responses from this endpoint:
+
+        - **200 - OK**
+            
+        - **400 - Bad Request**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                slot_id:
+                  type: string
+                patient_cap:
+                  type: string
+                  format: utc-millisec
+                status:
+                  type: boolean
+            example:
+              slot_id: d2s1
+              patient_cap: '30'
+              status: true
+  /api/dashboard/doctor/appointments:
+    get:
+      summary: Doctor Appointment Data API
+      parameters:
+        - name: duration
+          in: query
+          schema:
+            type: string
+          example: all
+      responses:
+        '200':
+          description: Doctor Appointment Data API
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 13:22:37 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '524'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  appointments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        appointment_public_id:
+                          type: string
+                        patient_public_id:
+                          type: string
+                        patient_full_name:
+                          type: string
+                        patient_gender:
+                          type: string
+                        patient_age:
+                          type: integer
+                        patient_height:
+                          type: integer
+                        patient_weight:
+                          type: integer
+                        date:
+                          type: string
+                          format: date
+                        start_time:
+                          type: string
+                          format: style
+                        end_time:
+                          type: string
+                        status:
+                          type: string
+                        is_treatment_exist:
+                          type: boolean
+              example:
+                count: 1
+                appointments:
+                  - appointment_public_id: AP664932D5
+                    patient_public_id: PA34668D
+                    patient_full_name: Dev Pritam
+                    patient_gender: Male
+                    patient_age: 22
+                    patient_height: 167
+                    patient_weight: 100
+                    date: '2026-03-08'
+                    start_time: '19:00'
+                    end_time: '22:00'
+                    status: booked
+                    is_treatment_exist: false
+      tags:
+        - Doctor-API
+        - Manage-Appointment-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource sends the doctor appointments.
+
+        ## Responses
+
+        All possible responses from this endpoint:
+
+        - **200 - OK**
+            
+        - **400 - Bad Request**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+    patch:
+      summary: Doctor Appointment Update API
+      responses:
+        '200':
+          description: Doctor Appointment Update API
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 13:29:01 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '62'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Appointment status updated successfully.
+      tags:
+        - Doctor-API
+        - Manage-Appointment-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource updates the appointment status.
+
+        ## Responses
+
+        All possible responses from this endpoint:
+
+        - **200 - OK**
+            
+        - **400 - Bad Request**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                appointment_public_id:
+                  type: string
+                status:
+                  type: string
+            example:
+              appointment_public_id: AP664932D5
+              status: completed
+  /api/dashboard/doctor/assigned-patients:
+    get:
+      summary: Doctor Assigned Patients API
+      responses:
+        '200':
+          description: Doctor Assigned Patients API
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 13:31:26 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '120'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  week_start_date:
+                    type: string
+                    format: date
+                  week_end_date:
+                    type: string
+                    format: date
+                  assigned_patients:
+                    type: array
+                    items: {}
+              example:
+                count: 0
+                week_start_date: '2026-03-02'
+                week_end_date: '2026-03-08'
+                assigned_patients: []
+      tags:
+        - Doctor-API
+        - Manage-Patient-API
+      security:
+        - BearerAuth: []
+      description: >-
+        ## Purpose
+
+
+        This resource gets the list of all assigned patient for the current
+        weeks appointment.
+
+
+        ## Responses
+
+
+        All possible responses from this endpoint:
+
+
+        - **200 - OK**
+            
+        - **400 - Bad Request**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+  /api/dashboard/doctor/patient-history:
+    get:
+      summary: Patient Treatment History API
+      parameters:
+        - name: patient_public_id
+          in: query
+          schema:
+            type: string
+          example: PA34668D
+      responses:
+        '200':
+          description: Patient Treatment History API
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 13:50:29 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '438'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  patient_public_id:
+                    type: string
+                  patient_full_name:
+                    type: string
+                  patient_history:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        appointment_public_id:
+                          type: string
+                        doctor_full_name:
+                          type: string
+                        doctor_public_id:
+                          type: string
+                        doctor_department:
+                          type: string
+                        date:
+                          type: string
+                          format: date
+                        start_time:
+                          type: string
+                          format: style
+                        end_time:
+                          type: string
+              example:
+                count: 1
+                patient_public_id: PA34668D
+                patient_full_name: Dev Pritam
+                patient_history:
+                  - appointment_public_id: AP664932D5
+                    doctor_full_name: Dr Das
+                    doctor_public_id: DR9E77DC
+                    doctor_department: General Medicine
+                    date: '2026-03-08'
+                    start_time: '19:00'
+                    end_time: '22:00'
+      tags:
+        - Doctor-API
+        - Manage-Patient-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource gets the patient history for the doctor.
+
+        ## Responses
+
+        All possible responses from this endpoint:
+
+        - **200 - OK**
+            
+        - **400 - Bad Request**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+    post:
+      summary: Add Patient Treatment History API
+      responses:
+        '200':
+          description: Add Patient Treatment History API
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 13:26:29 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '67'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Patient treatment history added successfully.
+      tags:
+        - Doctor-API
+        - Manage-Patient-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource adds the current patient appointment treatment.
+
+        ## Responses
+
+        All possible responses from this endpoint:
+
+        - **200 - OK**
+            
+        - **400 - Bad Request**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                appointment_public_id:
+                  type: string
+                visit_type:
+                  type: string
+                test_done:
+                  type: string
+                diagnosis:
+                  type: string
+                prescription:
+                  type: string
+                medicine:
+                  type: string
+                notes:
+                  type: string
+            example:
+              appointment_public_id: AP664932D5
+              visit_type: In-Person
+              test_done: X-Ray
+              diagnosis: Pain in the neck
+              prescription: Take rest from screen
+              medicine: Medicine1 - ac, Medicine2 - HS
+              notes: If the pain persist visit again after 2 week.
+    patch:
+      summary: Update Patient Treatment History API Copy
+      responses:
+        '200':
+          description: Update Patient Treatment History API Copy
+          headers:
+            Server:
+              deprecated: false
+              schema: {}
+              example: Werkzeug/3.1.3 Python/3.10.12
+            Date:
+              deprecated: false
+              schema: {}
+              example: Sun, 08 Mar 2026 13:27:49 GMT
+            Content-Length:
+              deprecated: false
+              schema: {}
+              example: '69'
+            Access-Control-Allow-Origin:
+              deprecated: false
+              schema: {}
+              example: '*'
+            Connection:
+              deprecated: false
+              schema: {}
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Patient treatment history updated successfully.
+      tags:
+        - Doctor-API
+        - Manage-Patient-API
+      security:
+        - BearerAuth: []
+      description: |-
+        ## Purpose
+
+        This resource updates the current patient appointment treatment.
+
+        ## Responses
+
+        All possible responses from this endpoint:
+
+        - **200 - OK**
+            
+        - **400 - Bad Request**
+            
+        - **401 - Unauthorized**
+            
+        - **403 - Forbidden**
+            
+        - **404 - Not Found**
+            
+        - **422 - Unprocessable**
+            
+        - **500 - Internal Server Error**
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                appointment_public_id:
+                  type: string
+                visit_type:
+                  type: string
+                test_done:
+                  type: string
+                diagnosis:
+                  type: string
+                prescription:
+                  type: string
+                medicine:
+                  type: string
+                notes:
+                  type: string
+            example:
+              appointment_public_id: AP664932D5
+              visit_type: Online
+              test_done: X-Ray
+              diagnosis: Pain in the neck
+              prescription: Take rest from screen
+              medicine: Medicine1 - ac, Medicine2 - HS
+              notes: If the pain persist visit again after 2 week.
+  /api/dashboard/doctor/treatment-data:
+    get:
+      summary: Patient Appointment Treatment Data API
+      parameters:
+        - name: appointment_public_id
+          in: query
+          schema:
+            type: string
+          example: APA202A34B
+      responses: {}
+      tags:
+        - Doctor-API
+        - Manage-Patient-API
+      security:
+        - BearerAuth: []
+  /api/dashboard/doctor/assigned-patients/search:
+    get:
+      summary: Search Assigned Patient API
+      parameters:
+        - name: query
+          in: query
+          required: false
+          deprecated: false
+          schema: {}
+          example: PA34668D
+      responses: {}
+      tags:
+        - Doctor-API
+        - Search-API
+      security:
+        - BearerAuth: []
+  /api/dashboard/doctor/appointments/search:
+    get:
+      summary: Search Appointments API
+      parameters:
+        - name: query
+          in: query
+          schema:
+            type: string
+          example: '2026-03-08'
+      responses: {}
+      tags:
+        - Doctor-API
+        - Search-API
+  /api/dashboard/patient/export-csv:
+    post:
+      summary: Request Report Export API
+      responses: {}
+      tags:
+        - Patient-Dashboard-API
+        - Async-Task-API
+      security:
+        - BearerAuth: []
+    get:
+      summary: Check Export Status API
+      parameters:
+        - name: task_id
+          in: query
+          required: false
+          deprecated: false
+          schema: {}
+          example: 6c6f2b65-695b-414e-a90c-f80380defef6
+      responses: {}
+      tags:
+        - Patient-Dashboard-API
+        - Async-Task-API
+      security:
+        - BearerAuth: []
+  /api/dashboard/patient/download-csv:
+    get:
+      summary: Download Report API
+      parameters:
+        - name: task_id
+          in: query
+          required: false
+          deprecated: false
+          schema: {}
+          example: 6c6f2b65-695b-414e-a90c-f80380defef6
+      responses: {}
+      tags:
+        - Patient-Dashboard-API
+        - Async-Task-API
+      security:
+        - BearerAuth: []
+  /api/dashboard/patient:
+    get:
+      summary: Patient Data API
+      responses:
+        '200':
+          description: Patient Data API
+          headers:
+            Server:
+              schema:
+                type: string
+              example: Werkzeug/3.1.3 Python/3.13.3
+            Date:
+              schema:
+                type: string
+              example: Wed, 11 Feb 2026 14:59:58 GMT
+            Content-Length:
+              schema:
+                type: integer
+              example: '230'
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+              example: '*'
+            Connection:
+              schema:
+                type: string
+              example: close
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  patient_public_id:
+                    type: string
+                  full_name:
+                    type: string
+                  email:
+                    type: string
+                    format: email
+                  is_active:
+                    type: boolean
+                  role:
+                    type: string
+                  dob:
+                    type: string
+                    format: date
+                  gender:
+                    type: string
+                  height_cm:
+                    type: integer
+                  weight_kg:
+                    type: integer
+                  contact:
+                    type: string
+                    format: utc-millisec
+              example:
+                patient_public_id: PAD98381
+                full_name: Pritam Saha
+                email: psafrad@gmail.com
+                is_active: true
+                role: patient
+                dob: '2004-05-09'
+                gender: male
+                height_cm: 167
+                weight_kg: 100
+                contact: '1234567890'
+      tags:
+        - Patient-Dashboard-API
+      security:
+        - BearerAuth: []
+    patch:
+      summary: Patient Data Edit API
+      responses: {}
+      tags:
+        - Patient-Dashboard-API
+  /api/dashboard/patient/upcoming-appointments:
+    get:
+      summary: Patient Upcoming Appointment API
+      responses: {}
+      tags:
+        - Patient-Dashboard-API
+    patch:
+      summary: Patient Upcoming Appointment API
+      responses: {}
+      tags:
+        - Patient-Dashboard-API
+  /api/dashboard/patient/book-appointment:
+    get:
+      summary: Patient Book Appointment API
+      responses: {}
+      tags:
+        - Patient-Dashboard-API
+    post:
+      summary: Patient Book Appointment API
+      responses: {}
+      tags:
+        - Patient-Dashboard-API
+  /api/dashboard/patient/departments:
+    get:
+      summary: All Departments API
+      responses: {}
+      tags:
+        - Patient-Dashboard-API
+  /api/dashboard/patient/appointment-history:
+    get:
+      summary: Patient Appointment History API
+      responses: {}
+      tags:
+        - Patient-Dashboard-API
+  /api/dashboard/patient/appointment-treatment:
+    get:
+      summary: Patient Appointment Treatment API
+      responses: {}
+      tags:
+        - Patient-Dashboard-API
+  /api/dashboard/patient/notifications:
+    get:
+      summary: Patient Notifications
+      responses: {}
+      tags:
+        - Patient-Dashboard-API
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

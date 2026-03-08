@@ -259,7 +259,7 @@ class UserLogin(Resource):
 
 # Access Token refresh API
 class TokenRefresher(Resource):
-    '''This resource consist of only 'POST' method which checks 'refresh token' sent by the client and returns the 'access token' '''
+    '''This resource consist of only 'GET' method which checks 'refresh token' sent by the client and returns the 'access token' '''
     @jwt_required(refresh=True)   
     def post(self):
         refreshToken_payload = get_jwt()

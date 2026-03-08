@@ -94,10 +94,10 @@ class AdminAppointments(Resource):
 
 
         appointments = []
-
+        current_datetime = datetime.now()
+        
         if duration in ["current-week", "previous"]:
             
-            current_datetime = datetime.now()
             weekday_index = int(current_datetime.strftime("%u")) - 1
             current_week_start_date = current_datetime.date() - timedelta(days=weekday_index)
 

@@ -6,7 +6,7 @@
 <img src="docs/images/preview_image.png" alt="App Landing Page" height="260" width="480">
 
 ## Installation and Setup
-### ※ Environment Setup
+### ※ Prerequisites
 ### To start the application locally you need to have already installed the following in your system(Linux):
     
 1. Python(3.10+) and pip -> Linux systems already comes with pre-installed python, check (python3 --version) 
@@ -17,42 +17,44 @@
 ### ※ Package Installation
 > Make sure you are in the project root folder before procceding with the below steps
 1. **Install Packages for Flask Backend server (Linux)**
-
+*  The python environment setup will take some time, so donot be scared
 ```bash
 python3 -m venv .venv && source .venv/bin/activate && 
-pip install -r requirements.txt
+pip install -r requirements.txt && deactivate
 ```
 
 2. **Install Packages for Vue Frontend server (Linux)**
 ```bash
-cd app_frontend_VUE && npm install
+cd app_frontend_VUE && npm install && cd ..
 ```
 
 ### ※ Run the Application
-> Make sure you are in the project root folder before procceding with the below steps
+> * Make sure you are in the project root folder before procceding with the below steps
 1. **To run the application backend server (Linux)**
 ```bash
 source .venv/bin/activate && python3 app.py
 ```
 
+> * Open up a different terminal window on the project root dir to run the frontend
 2. **To run the application frontend server (Linux)**
 ```bash
-cd app_frontend_VUE && npm run dev 
+cd app_frontend_VUE && npm run dev
 ```
 
-3. **Start Redis server (Linux)**
+> * Open up a different terminal window on the project root dir to check or run the redis server
+3. **Check redis server is active or not (Linux)**
+* If the output is 'PONG' then active
+```bash
+redis-cli ping 
+```
+
+4. **Start Redis server (if not active) (Linux)**
 ```bash
 sudo systemctl start redis-server
 ```
 
-4. **Check redis server is active or not (Linux)**
-```bash
-redis-cli ping 
-
-## If the output is 'PONG' then active
-```
-
 ### ※ Test SMTP Server Setup (Mailhog)
+> * Open up a different terminal window and run the below commands
 1. **Start Docker Service and Socket**
 ```bash
 sudo systemctl start docker.service && 
