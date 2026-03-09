@@ -76,7 +76,7 @@ sudo docker run -d -p 1025:1025 -p 8025:8025 mailhog/mailhog
 
 2. I am using 'mailhog' a testing smtp server and for that we need docker services, else docker has not been used anywhere in the project.
 
-3. Celery worker and beat processes are being auto triggered by the python suprocess, so no need to start the processes separately.
+3. Celery worker and beat processes are being auto triggered by the python subprocess, so no need to start the processes separately.
 
 ## Ports:
 

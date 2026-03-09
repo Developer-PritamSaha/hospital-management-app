@@ -674,19 +674,21 @@ class AdminManageDoctor(Resource):
 
         doctor = User.query.filter_by(id=doctor_user_id).first()
         if not doctor:
-             abort(404, message="Doctor donot exist.")
+            abort(404, message="Doctor user donot exist.")
 
         doc_exist = Doctor.query.filter_by(user_id=doctor_user_id).first()
         if doc_exist:
             doc_public_id = doc_exist.public_id
         else:
             doc_public_id = None
+            abort(404, message="Doctor not found.")
 
         try:
             db.session.delete(doctor)
             db.session.flush()
 
             app.extensions["cache_data"].delete("doctor_cache")
+            app.extensions["cache_data"].delete_memoized(data_cache.get_doctor_availability, doc_exist.id)
 
         except Exception as e:
             db.session.rollback()
