@@ -178,6 +178,7 @@ class User_Tokens(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
     jti = db.Column(db.String(255), nullable=False, unique=True, index=True)
+    parent_jti = db.Column(db.String(255), nullable=False, unique=False, index=True)
     type = db.Column(db.String(20), nullable=False)
     create_datetime = db.Column(db.DateTime, default=datetime.now(), nullable=False)
     expiry_datetime = db.Column(db.DateTime, nullable=False)

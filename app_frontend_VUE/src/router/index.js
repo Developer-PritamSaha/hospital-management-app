@@ -8,6 +8,8 @@ import AdminDashboard from '@/views/dashboards/AdminDashboard.vue'
 import DoctorDashboard from '@/views/dashboards/DoctorDashboard.vue'
 import PatientDashboard from '@/views/dashboards/PatientDashboard.vue'
 
+import DeviceMng from '@/components/global_components/device_management.vue'
+
 import ADappointments from '@/components/admin_components/appointments_home.vue'
 import ADupcommingAp from '@/components/admin_components/upcomming_appointments.vue'
 import ADpreviousAp from '@/components/admin_components/previous_appointments.vue'
@@ -111,6 +113,11 @@ const routes = [
         path: "patient-records",
         name: "AdminPatientHistory",
         component: ADpatientHistory
+      },
+      {
+        path: "devices",
+        name: "AdminDeviceMng",
+        component: DeviceMng
       }
       
     ]
@@ -155,6 +162,11 @@ const routes = [
         path: "profile",
         name: "PatientProfile",
         component: PAprofile
+      },
+      {
+        path: "devices",
+        name: "PatientDeviceMng",
+        component: DeviceMng
       }
 
     ]
@@ -212,6 +224,11 @@ const routes = [
         name: "DoctorAvailability",
         component: DRavailability,
       },
+      {
+        path: "devices",
+        name: "DoctorDeviceMng",
+        component: DeviceMng
+      }
     ]
   },
   {

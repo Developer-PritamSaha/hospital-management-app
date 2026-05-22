@@ -271,8 +271,10 @@
             
             <router-link to="/dashboard/admin/add-doctor" class="nav-link" title="Add Doctor"><i class="bi bi-plus-square me-3"></i><span class="sidebar-text">Add Doctor</span></router-link>
 
-            <div class="mt-5 px-4 border-top pt-4">
-                <a class="nav-link px-0 text-danger" @click="logout" title="Logout"><i class="bi bi-power me-3"></i><span class="sidebar-text">Logout</span></a>
+            <div class="mt-5 border-top pt-4">
+                <router-link to="/dashboard/admin/devices" class="nav-link text-primary" title="Device Management"><i class="bi bi-pc-display me-3"></i><span class="sidebar-text">Device Management</span></router-link>
+
+                <a class="nav-link text-danger" @click="logout" title="Logout"><i class="bi bi-power me-3"></i><span class="sidebar-text">Logout</span></a>
             </div>
         </nav>
     </aside>

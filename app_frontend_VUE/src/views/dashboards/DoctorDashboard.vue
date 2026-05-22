@@ -262,8 +262,10 @@
 
             <router-link to="/dashboard/doctor/availability" class="nav-link" title="Manage Availability"><i class="bi bi-calendar2-week me-3"></i><span class="sidebar-text">Manage Availability</span></router-link>
 
-            <div class="mt-5 px-4 border-top pt-4">
-                <a class="nav-link px-0 text-danger" @click="logout" title="Logout"><i class="bi bi-power me-3"></i><span class="sidebar-text">Logout</span></a>
+            <div class="mt-5 border-top pt-4">
+                <router-link to="/dashboard/doctor/devices" class="nav-link text-primary" title="Device Management"><i class="bi bi-pc-display me-3"></i><span class="sidebar-text">Device Management</span></router-link>
+
+                <a class="nav-link text-danger" @click="logout" title="Logout"><i class="bi bi-power me-3"></i><span class="sidebar-text">Logout</span></a>
             </div>
         </nav>
     </aside>

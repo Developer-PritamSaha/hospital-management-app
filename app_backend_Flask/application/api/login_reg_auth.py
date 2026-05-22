@@ -230,6 +230,7 @@ class UserLogin(Resource):
             new_refresh_token = User_Tokens(
                 user_id = user.id,
                 jti = refresh_jti_sig,
+                parent_jti = "NA",
                 type = "refresh",
                 create_datetime = datetime.now(),
                 expiry_datetime = datetime.now() + expiry_period
@@ -237,6 +238,7 @@ class UserLogin(Resource):
             new_access_token = User_Tokens(
                 user_id = user.id,
                 jti = access_jti_sig,
+                parent_jti = refresh_jti_sig,
                 type = "access",
                 create_datetime = datetime.now(),
                 expiry_datetime = datetime.now() + timedelta(minutes=10)
@@ -276,6 +278,12 @@ class TokenRefresher(Resource):
             abort(401, message="Invalid or expired refresh token")
         
         try:
+            # Invalidate Previous access token
+            prev_accessToken = User_Tokens.query.filter_by(user_id=int(userId), type='access', valid=True, parent_jti=rfreshToken_jti).first()
+
+            prev_accessToken.valid = False
+            db.session.flush()
+
             # Generate new access token
             jwt_access_token = create_access_token(identity=str(userId), additional_claims={"role": Roles_Users.user_role(int(userId)), "refresh_jti": rfreshToken_jti})
         
@@ -284,6 +292,7 @@ class TokenRefresher(Resource):
             new_access_token = User_Tokens(
                 user_id = int(userId),
                 jti = jti_sig,
+                parent_jti = rfreshToken_jti,
                 type = "access",
                 create_datetime = datetime.now(),
                 expiry_datetime = datetime.now() + timedelta(minutes=10)
@@ -366,7 +375,7 @@ class UserLogoutEverywhere(Resource):
             abort(401, message="Logout failed: User not logged in.")
        
         try:
-            tokens = User_Tokens.query.filter_by(user_id=int(user_id)).all()
+            tokens = User_Tokens.query.filter_by(user_id=int(user_id), valid=True).all()
             for t in tokens:
                 t.valid = False
                 db.session.flush()

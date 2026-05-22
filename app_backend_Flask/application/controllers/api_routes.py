@@ -11,6 +11,10 @@ app.extensions["api"].add_resource(UserTokenRole, "/api/token/user/role-valid")
 app.extensions["api"].add_resource(UserLogout, "/api/logout")
 app.extensions["api"].add_resource(UserLogoutEverywhere, "/api/logout/all")
 
+## Device Management API
+app.extensions["api"].add_resource(UserDevices, "/api/devices")
+app.extensions["api"].add_resource(UserLogoutDevice, "/api/device/logout")
+
 ## Search APIs
 app.extensions["api"].add_resource(AdminSearchAppointments, "/api/dashboard/admin/appointments/search")
 app.extensions["api"].add_resource(AdminSearchPatientsData, "/api/dashboard/admin/patients/search")

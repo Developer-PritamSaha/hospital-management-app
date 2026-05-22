@@ -277,10 +277,12 @@
             
             <router-link to="/dashboard/patient/history" class="nav-link" title="History"><i class="bi bi-clock-history me-3"></i><span class="sidebar-text">History</span></router-link>
 
-            <router-link to="/dashboard/patient/profile" class="nav-link" title="Profile"><i class="bi bi-person-square me-3"></i><span class="sidebar-text">Profile</span></router-link>
+            <div class="mt-5 border-top pt-4">
+                <router-link to="/dashboard/patient/profile" class="nav-link text-success" title="Profile"><i class="bi bi-person-square me-3"></i><span class="sidebar-text">Profile</span></router-link>
 
-            <div class="mt-5 px-4 border-top pt-4">
-                <a class="nav-link px-0 text-danger" @click="logout" title="Logout"><i class="bi bi-power me-3"></i><span class="sidebar-text">Logout</span></a>
+                <router-link to="/dashboard/patient/devices" class="nav-link text-primary" title="Device Management"><i class="bi bi-pc-display me-3"></i><span class="sidebar-text">Devices</span></router-link>
+
+                <a class="nav-link text-danger" @click="logout" title="Logout"><i class="bi bi-power me-3"></i><span class="sidebar-text">Logout</span></a>
             </div>
         </nav>
     </aside>

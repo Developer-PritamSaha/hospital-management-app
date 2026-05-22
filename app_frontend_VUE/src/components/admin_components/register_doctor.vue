@@ -256,12 +256,12 @@ async function register_doc(){
         <div class="row g-4">
             <div ref="alertPlaceholder"></div>
             <div class="d-flex align-items-center ">
-                    <div>
-                        <h3 class="h4 fw-bold mb-0" style="color: #220349;">Doctor Registration</h3>
-                        <p class="text-muted small mb-0">Fill the doctor's details to register or signup</p>
-                    </div>
+                <div>
+                    <h3 class="h4 fw-bold mb-0" style="color: #220349;">Doctor Registration</h3>
+                    <p class="text-muted small mb-0">Fill the doctor's details to register or signup</p>
                 </div>
-                <div class="card border-0 shadow-sm rounded-4 p-4">
+            </div>
+            <div class="card border-0 shadow-sm rounded-4 p-4">
             <div class="col-12">
                 <!-- <p>{{ data_invalid_flag }}</p> -->
                 <form @submit.prevent="register_doc">
