@@ -10,4 +10,5 @@ celerybeat-schedule*
 *.vscode
 *.db
 *.csv
+temp
 docs/project_guides
