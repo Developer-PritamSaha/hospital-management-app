@@ -5,6 +5,9 @@
 ## Preview
 <img src="docs/images/preview_image.png" alt="App Landing Page" height="260" width="480">
 
+> [!WARNING]
+> **Critical:** This project is currently in active development and not intended for production uses. Breaking changes may occur at any time without notice.
+
 ## Installation and Setup
 ### ※ Prerequisites
 ### To start the application locally you need to have already installed the following in your system(Linux):
@@ -17,7 +20,7 @@
 ### ※ Package Installation
 > Make sure you are in the project root folder before procceding with the below steps
 1. **Install Packages for Flask Backend server (Linux)**
-*  The python environment setup will take some time, so donot be scared
+*  The python environment setup will take some time, so donot be scared 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate && 
 pip install -r requirements.txt && deactivate
@@ -27,30 +30,33 @@ pip install -r requirements.txt && deactivate
 ```bash
 cd app_frontend_VUE && npm install && cd ..
 ```
-
+> <!> Warning: If adviced to run ```npm audit``` then use
+```bash
+cd app_frontend_VUE && npm audit && npm audit fix && cd ..
+```
 ### ※ Run the Application
-> * Make sure you are in the project root folder before procceding with the below steps
-1. **To run the application backend server (Linux)**
-```bash
-source .venv/bin/activate && python3 app.py
-```
-
-> * Open up a different terminal window on the project root dir to run the frontend
-2. **To run the application frontend server (Linux)**
-```bash
-cd app_frontend_VUE && npm run dev
-```
-
 > * Open up a different terminal window on the project root dir to check or run the redis server
-3. **Check redis server is active or not (Linux)**
+1. **Check redis server is active or not (Linux)**
 * If the output is 'PONG' then active
 ```bash
 redis-cli ping 
 ```
 
-4. **Start Redis server (if not active) (Linux)**
+> **Start Redis server (if not active) (Linux)**
 ```bash
 sudo systemctl start redis-server
+```
+
+> * Make sure you are in the project root folder before procceding with the below steps
+2. **To run the application backend server (Linux)**
+```bash
+source .venv/bin/activate && python3 app.py
+```
+
+> * Open up a different terminal window on the project root dir to run the frontend
+3. **To run the application frontend server (Linux)**
+```bash
+cd app_frontend_VUE && npm run dev
 ```
 
 ### ※ Test SMTP Server Setup (Mailhog)
@@ -80,8 +86,9 @@ sudo docker run -d -p 1025:1025 -p 8025:8025 mailhog/mailhog
 
 ## Ports:
 
-* http://localhost:5080/ - flask backend
-* http://localhost:5173/ - vue frontend
-* http://localhost:6379/ - redis server
-* http://localhost:1025/ - mailhog smtp server
-* http://localhost:8025/ - mailhog email dashboard UI
+* http://127.0.0.1:5080/ - main HMS app
+* http://127.0.0.1:5080/ - flask backend 
+* http://127.0.0.1:5173/ - vue frontend
+* http://127.0.0.1:6379/ - redis server
+* http://127.0.0.1:1025/ - mailhog smtp server
+* http://127.0.0.1:8025/ - mailhog email dashboard UI
